@@ -1,0 +1,27 @@
+﻿.post-card {
+    border: 1px solid #d0d0d0;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    margin: auto;
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 10px;
+    background-color: white;
+    width: 60%; /* Fixed width */
+    height: 400px; /* Fixed height */
+    overflow: hidden; /* Hide content that overflows */
+    display: flex;
+    flex-direction: column;
+}
+
+    .post-card h3 {
+        margin-top: 0;
+        color: #333;
+        font-size: 1.2em;
+        text-align: center;
+    }
+
+.post-card-content {
+    overflow-y: hidden;
+    flex-grow: 1;
+    padding-right: 5px;
+}

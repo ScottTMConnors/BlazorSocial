@@ -1,0 +1,125 @@
+﻿@page "/ViewPosts"
+
+
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@using Microsoft.AspNetCore.Authorization
+@using Data
+@using Data.Entities;
+@using Data.ComponentObjects;
+@using Microsoft.AspNetCore.Identity;
+@using Microsoft.EntityFrameworkCore;
+@using Microsoft.AspNetCore.Components.Web.Virtualization;
+
+
+
+@inject ContentDbContext DbContext
+
+@inject IDbContextFactory<ContentDbContext> dbContextFactory
+
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+<link rel="stylesheet" href="ViewPosts.css" asp-append-version="true" />
+
+
+<head>
+    
+</head>
+
+<h3>View All Posts</h3>
+
+<Virtualize Context="post" ItemsProvider="@LoadPosts">
+    <ItemContent>
+        <a href="/post/@post.Id" target="_blank" class="post-card" style="text-decoration:none;color:black;">
+            <div>
+                <p>@post.AuthorName</p>
+                <h3>@post.Title</h3>
+                <p>@post.DateString</p>
+                <div class="post-card-content">
+                    <p>@((MarkupString)post.Content)</p>
+                </div>
+            </div>
+        </a>
+    </ItemContent>
+</Virtualize>
+
+@code {
+    private string privateString = "this string is private";
+
+
+    private List<ViewPostObject> postsCache = new List<ViewPostObject>();
+
+    private async ValueTask<ItemsProviderResult<ViewPostObject>> LoadPosts(ItemsProviderRequest request) {
+        var requiredPosts = new List<ViewPostObject>();
+
+        // Check cache first
+        for (int i = request.StartIndex; i < request.StartIndex + request.Count; i++) {
+            if (i < postsCache.Count) {
+                requiredPosts.Add(postsCache[i]);
+            } else {
+                break; // If not all required posts are in the cache, break and load from DB
+            }
+        }
+
+        if (requiredPosts.Count < request.Count) {
+            using var dbContext = dbContextFactory.CreateDbContext();
+            var newPosts = await dbContext.Posts
+                .OrderByDescending(post => post.PostDate)
+                .Select(post => new {
+                    post.Id,
+                    post.AuthorID,
+                    post.Title,
+                    ContentSummary = post.Content.Substring(0, 1000),
+                    post.PostDate,
+                    post.Upvotes,
+                    post.Downvotes,
+                    post.ViewCount
+                })
+                .Skip(postsCache.Count)
+                .Take(request.Count - requiredPosts.Count)
+                .ToListAsync();
+
+
+            // Transform and add to cache
+            var newViewPosts = newPosts.Select(post => new ViewPostObject {
+                Id = post.Id,
+                Title = post.Title,
+                Content = post.ContentSummary,
+                PostDate = post.PostDate,
+                DateString = ConvertDateToString(post.PostDate),
+                Upvotes = post.Upvotes,
+                Downvotes = post.Downvotes,
+                AuthorID = post.AuthorID,
+                AuthorName = "",
+                ViewCount = post.ViewCount
+            }).ToList();
+            postsCache.AddRange(newViewPosts);
+            requiredPosts.AddRange(newViewPosts);
+        }
+
+        // Calculate a dynamic total item count
+        int dynamicTotalCount = postsCache.Count + (requiredPosts.Any() ? 10 : 0);
+
+        return new ItemsProviderResult<ViewPostObject>(requiredPosts, dynamicTotalCount);
+    }
+
+    public string ConvertDateToString(DateTime? date) {
+        if (!date.HasValue) {
+            return "Invalid date";
+        }
+
+        TimeSpan difference = DateTime.Now - date.Value;
+
+        if (difference.TotalDays >= 1) {
+            return date.Value.ToString();
+        } else if (difference.TotalHours >= 1) {
+            return $"{(int)difference.TotalHours}h";
+        } else if (difference.TotalMinutes >= 1) {
+            return $"{(int)difference.TotalMinutes}m";
+        } else {
+            return $"{(int)difference.TotalSeconds}s";
+        }
+    }
+
+}
+

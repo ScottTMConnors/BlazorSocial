@@ -1,0 +1,113 @@
+﻿@page "/CreatePost"
+
+@rendermode InteractiveServer
+
+
+@using Microsoft.AspNetCore.Authorization
+@using Data;
+@using Data.Entities
+@using System.ComponentModel.DataAnnotations
+@using System.Text
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+
+@inject ContentDbContext DbContext
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize]
+
+<head>
+    <link rel="stylesheet" href="CreatePost.css" asp-append-version="true" />
+</head>
+
+<PageTitle>Create Post</PageTitle>
+
+<h3>CreatePost</h3>
+
+
+
+
+
+
+<StatusMessage Message="@Message" />
+<EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="SubmitPost" FormName="submitpost" class="post-form">
+    <DataAnnotationsValidator />
+    <h2>Create a new post</h2>
+    <hr />
+    <ValidationSummary role="alert" />
+    <div class="form-floating mb-3">
+        <InputText @bind-Value="Input.Title" id="title" class="form-control"  aria-required="true" />
+        <label for="title">Title</label>
+        <ValidationMessage For="() => Input.Title" />
+    </div>
+    <div class="form-floating mb-3">
+        <InputTextArea @bind-Value="Input.Content" id="content" class="form-control custom-textarea" aria-required="true" />
+        <label for="content">Content</label>
+        <ValidationMessage For="() => Input.Content" />
+    </div>
+    <button type="submit" class="w-100 btn btn-lg btn-primary">Post</button>
+</EditForm>
+
+
+
+
+
+@code {
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    private string? Message;
+
+
+    private sealed class InputModel {
+        [Required]
+        [StringLength(50, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+        [Display(Name = "Title")]
+        public string Title { get; set; } = "";
+
+        [Required]
+        [StringLength(32767, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+        [Display(Name = "Content")]
+        public string Content { get; set; } = "";
+    }
+
+
+
+
+    public async Task SubmitPost(EditContext editContext) {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated) {
+            string content = ((Input.Content).Replace("\n", "<br />"));
+            var userId = user.FindFirst(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+            string postId = Guid.NewGuid().ToString();
+            Post newPost = new Post {
+                Id = postId,
+                Title = Input.Title,
+                Content = content,
+                AuthorID = userId,
+                PostDate = DateTime.Now,
+                Upvotes = 0,
+                Downvotes = 0
+
+            };
+
+            DbContext.Posts.Add(newPost);
+            await DbContext.SaveChangesAsync();
+            Message = "Post Successful";
+
+            NavigationManager.NavigateTo($"/post/{postId}");
+        }
+    }
+
+    
+
+}
