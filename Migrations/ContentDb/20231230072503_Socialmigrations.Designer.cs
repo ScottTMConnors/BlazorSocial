@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazorSocial.Migrations.ContentDb
 {
     [DbContext(typeof(ContentDbContext))]
-    [Migration("20231229195239_Socialmigrations")]
+    [Migration("20231230072503_Socialmigrations")]
     partial class Socialmigrations
     {
         /// <inheritdoc />
@@ -131,6 +131,20 @@ namespace BlazorSocial.Migrations.ContentDb
                     b.HasKey("Id");
 
                     b.ToTable("PostTypes");
+                });
+
+            modelBuilder.Entity("BlazorSocial.Data.Entities.SocialUser", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("SocialUsers");
                 });
 
             modelBuilder.Entity("BlazorSocial.Data.Entities.View", b =>

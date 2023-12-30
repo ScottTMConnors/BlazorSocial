@@ -56,8 +56,8 @@
 @code {
     private string message = "";
 
-    private int numberOfPosts = 100000;
-    private int maxTitle = 2;
+    private int numberOfPosts = 10000;
+    private int maxTitle = 1;
     private int maxContent = 1000;
 
     public int PostCount { get; private set; }
@@ -78,14 +78,13 @@
 
         using var dbContext = dbContextFactory.CreateDbContext();
         PostCount = dbContext.Posts.Count();
-        message = $"Generating {numberOfPosts} posts";
-        Debug.WriteLine($"Generating {numberOfPosts} posts");
+
         StateHasChanged();
 
 
-        List<Post> GeneratedPosts = new List<Post>();
-
-        // Generate 100000 random posts
+        message = $"Generating {numberOfPosts} posts";
+        Debug.WriteLine($"Generating {numberOfPosts} posts");
+        ConcurrentBag<Post> GeneratedPosts = new ConcurrentBag<Post>();
         Parallel.For(0, numberOfPosts, async i => {
             //for (int i = 0; i < 100000; i++) {
             // Generate a random title and content
@@ -95,8 +94,8 @@
             var randomTitletask = GenerateRandomSentence(random, 1, maxTitle); // Assuming title length between 10 and 20 characters
             var randomContenttask = GenerateRandomSentence(random, 3, maxContent); // Content length between 5 and 100 characters
             string randomId = Guid.NewGuid().ToString();
-            int range = (endDate - startDate).Days;
-            DateTime randomDate = startDate.AddDays(random.Next(range));
+            int range = ((endDate - startDate).Days + 1);
+            DateTime randomDate = startDate.AddDays(random.Next(range)).AddHours(random.Next(DateTime.Now.Hour)).AddMinutes(random.Next(DateTime.Now.Minute)).AddSeconds(random.Next(DateTime.Now.Second));
 
             await Task.WhenAll(randomTitletask, randomContenttask);
             string randomTitle = randomTitletask.Result;
@@ -106,7 +105,7 @@
                 Title = randomTitle,
                 Content = randomContent,
                 PostDate = randomDate,
-                Upvotes = random.Next(0,10000),
+                Upvotes = random.Next(0, 10000),
                 Downvotes = random.Next(0, 10000),
                 ViewCount = 0
             };
@@ -114,6 +113,8 @@
             GeneratedPosts.Add(newPost);
             //}
         });
+
+
         Debug.WriteLine("Inserting into db");
         await dbContext.BulkInsertAsync(GeneratedPosts);
         // DbContext.Posts.AddRange(GeneratedPosts);
@@ -124,6 +125,7 @@
         StateHasChanged();
         dbContext.DisposeAsync();
     }
+
 
     private async Task<string> GenerateRandomSentence(Random random, int minPhrases, int maxLength) {
         string[] connectors = {
@@ -289,6 +291,7 @@
 
             string currentObject = subjects[random.Next(objects.Length)];
             string currentObject2 = subjects[random.Next(objects.Length)];
+
             int subjectGroups = random.Next(1, 3);
             StringBuilder subjectString = new StringBuilder();
 
@@ -353,7 +356,7 @@
             sentence.Add(subjectString.ToString());
         });
 
-        return string.Join(".", sentence);
+        return string.Join("", sentence);
     }
 
 
@@ -361,7 +364,7 @@
 
         using var dbContext = dbContextFactory.CreateDbContext();
 
-        string sqlCommand = $"TRUNCATE TABLE Posts;";
+        string sqlCommand = $"DELETE FROM Posts";
 
         // Execute the raw SQL command
         await dbContext.Database.ExecuteSqlRawAsync(sqlCommand);

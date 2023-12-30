@@ -14,7 +14,7 @@ namespace BlazorSocial.Data.Entities {
         public int? Downvotes { get; set; }
         public PostType? PostType { get; set; }
         [NotMapped]
-        public ApplicationUser? Author { get; set; }
+        public SocialUser? Author { get; set; }
         [NotMapped]
         public int? TotalVotes { get; set; }
         public int? ViewCount { get; set; }

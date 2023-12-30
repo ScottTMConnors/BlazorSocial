@@ -130,6 +130,20 @@ namespace BlazorSocial.Migrations.ContentDb
                     b.ToTable("PostTypes");
                 });
 
+            modelBuilder.Entity("BlazorSocial.Data.Entities.SocialUser", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("SocialUsers");
+                });
+
             modelBuilder.Entity("BlazorSocial.Data.Entities.View", b =>
                 {
                     b.Property<string>("PostId")

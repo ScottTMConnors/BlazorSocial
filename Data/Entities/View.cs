@@ -10,6 +10,6 @@ namespace BlazorSocial.Data.Entities {
         public int TimesViewed { get; set; }
         public Post? Post { get; set; }
         [NotMapped]
-        public ApplicationUser? User { get; set; }
+        public SocialUser? User { get; set; }
     }
 }

@@ -39,6 +39,18 @@ namespace BlazorSocial.Migrations.ContentDb
                 });
 
             migrationBuilder.CreateTable(
+                name: "SocialUsers",
+                columns: table => new
+                {
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SocialUsers", x => x.UserId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Posts",
                 columns: table => new
                 {
@@ -180,6 +192,9 @@ namespace BlazorSocial.Migrations.ContentDb
 
             migrationBuilder.DropTable(
                 name: "PostMetadatas");
+
+            migrationBuilder.DropTable(
+                name: "SocialUsers");
 
             migrationBuilder.DropTable(
                 name: "Views");

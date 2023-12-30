@@ -22,7 +22,7 @@
     [Parameter]
     public string Id { get; set; }
 
-    private Post _currentPost;
+    private Post? _currentPost;
 
     protected override void OnInitialized() {
 
@@ -31,7 +31,7 @@
         }
 
         //Get the post object associated with this id
-        _currentPost = DbContext.Posts.Where(post => post.Id == Id).First();
+        _currentPost = DbContext.Posts.Where(post => post.Id == Id).FirstOrDefault();
 
     }
 
