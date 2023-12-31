@@ -88,7 +88,7 @@
         if (user.Identity.IsAuthenticated) {
             string content = ((Input.Content).Replace("\n", "<br />"));
             var userId = user.FindFirst(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
-            string postId = Guid.NewGuid().ToString();
+            string postId = Guid.NewGuid().ToString("N");
             Post newPost = new Post {
                 Id = postId,
                 Title = Input.Title,

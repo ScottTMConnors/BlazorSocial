@@ -79,7 +79,7 @@
         using var dbContext = dbContextFactory.CreateDbContext();
 
         // Check user name is valid
-        SocialUser? foundUser = dbContext.SocialUsers.Where(user => user.UserName == Input.Username).FirstOrDefault();
+        SocialUser? foundUser = dbContext.SocialUsers.Where(user => user.NormalizedUserName == Input.Username.ToUpper()).FirstOrDefault();
 
         if (foundUser != null) {
             identityErrors = new List<IdentityError> {
@@ -108,7 +108,8 @@
         var userId = await UserManager.GetUserIdAsync(user);
         SocialUser theUser = new SocialUser {
             UserId = userId,
-            UserName = Input.Username
+            UserName = Input.Username,
+            NormalizedUserName = Input.Username.ToUpper()
         };
 
         dbContext.SocialUsers.Add(theUser);

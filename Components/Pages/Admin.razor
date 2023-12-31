@@ -15,6 +15,7 @@
 @using EFCore.BulkExtensions
 @using System.Diagnostics
 @using System.Collections.Concurrent
+@using NameGenerator.Generators
 
 @inject ContentDbContext DbContext
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -36,6 +37,9 @@
 
 <h3>Generate Random Posts</h3>
 <br />
+<p>Specify # of users</p>
+<input type="number" @bind="numberOfUsers" />
+<br />
 <p>Specify # of posts</p>
 <input type="number" @bind="numberOfPosts" />
 <br />
@@ -46,7 +50,7 @@
 <input type="number" @bind="maxContent" />
 <br />
 <br />
-<button class="btn btn-primary" @onclick="GeneratePosts">Generate</button>
+<button class="btn btn-primary" @onclick="GenerateData">Generate</button>
 <br />
 <br />
 <h3>Delete All Posts</h3>
@@ -56,13 +60,31 @@
 @code {
     private string message = "";
 
-    private int numberOfPosts = 10000;
+    private int numberOfPosts = 100;
     private int maxTitle = 1;
-    private int maxContent = 1000;
+    private int maxContent = 100;
+
+    private int numberOfUsers = 100;
 
     public int PostCount { get; private set; }
 
+    private DateTime endDate = DateTime.Now;
+
     private static readonly object _lockObject = new object();
+    private List<Post>? PostList;
+
+    private List<SocialUser>? UserList;
+
+    private ConcurrentBag<PostMetadata>? PostMetaList = new ConcurrentBag<PostMetadata>();
+
+    private ConcurrentBag<View> ViewList = new ConcurrentBag<View>();
+
+    private ConcurrentBag<Vote> VoteList = new ConcurrentBag<Vote>();
+
+    private class interactionObject {
+        public IEnumerable<View> Views { get; set; }
+        public IEnumerable<Vote> Votes { get; set; }
+    }
 
 
     protected override void OnInitialized() {
@@ -73,7 +95,7 @@
     }
 
 
-    protected async Task GeneratePosts() {
+    protected async Task GenerateData() {
 
 
         using var dbContext = dbContextFactory.CreateDbContext();
@@ -81,42 +103,22 @@
 
         StateHasChanged();
 
+        // Generate random users
+        UserList = GenerateUsers().ToList();
 
-        message = $"Generating {numberOfPosts} posts";
-        Debug.WriteLine($"Generating {numberOfPosts} posts");
-        ConcurrentBag<Post> GeneratedPosts = new ConcurrentBag<Post>();
-        Parallel.For(0, numberOfPosts, async i => {
-            //for (int i = 0; i < 100000; i++) {
-            // Generate a random title and content
-            Random random = new Random();
-            DateTime startDate = new DateTime(2020, 1, 1);
-            DateTime endDate = DateTime.Now;
-            var randomTitletask = GenerateRandomSentence(random, 1, maxTitle); // Assuming title length between 10 and 20 characters
-            var randomContenttask = GenerateRandomSentence(random, 3, maxContent); // Content length between 5 and 100 characters
-            string randomId = Guid.NewGuid().ToString();
-            int range = ((endDate - startDate).Days + 1);
-            DateTime randomDate = startDate.AddDays(random.Next(range)).AddHours(random.Next(DateTime.Now.Hour)).AddMinutes(random.Next(DateTime.Now.Minute)).AddSeconds(random.Next(DateTime.Now.Second));
+        //Generate random posts
+        PostList = GeneratePosts().ToList();
 
-            await Task.WhenAll(randomTitletask, randomContenttask);
-            string randomTitle = randomTitletask.Result;
-            string randomContent = randomContenttask.Result;
-            Post newPost = new Post {
-                Id = randomId,
-                Title = randomTitle,
-                Content = randomContent,
-                PostDate = randomDate,
-                Upvotes = random.Next(0, 10000),
-                Downvotes = random.Next(0, 10000),
-                ViewCount = 0
-            };
 
-            GeneratedPosts.Add(newPost);
-            //}
-        });
+        // Generate User/Post views and votes
 
 
         Debug.WriteLine("Inserting into db");
-        await dbContext.BulkInsertAsync(GeneratedPosts);
+        await dbContext.BulkInsertAsync(UserList);
+        await dbContext.BulkInsertAsync(PostList);
+        await dbContext.BulkInsertAsync(PostMetaList);
+        await dbContext.BulkInsertAsync(ViewList);
+        await dbContext.BulkInsertAsync(VoteList);
         // DbContext.Posts.AddRange(GeneratedPosts);
         // await DbContext.SaveChangesAsync();
         message = $"{numberOfPosts} Random Posts Successful";
@@ -124,8 +126,157 @@
         PostCount = dbContext.Posts.Count();
         StateHasChanged();
         dbContext.DisposeAsync();
+        PostList.Clear();
+        UserList.Clear();
+        GC.Collect();
     }
 
+    private IEnumerable<SocialUser> GenerateUsers() {
+        ConcurrentBag<SocialUser> GeneratedUsers = new ConcurrentBag<SocialUser>();
+        Parallel.For(0, numberOfUsers, i => {
+            Random random = new Random();
+            RealNameGenerator generator = new RealNameGenerator();
+            generator.SpaceCharacter = "";
+            string userNumber = string.Format("{0:00}", random.Next(99));
+            string username = generator.Generate();
+            username = string.Concat(username, userNumber);
+            string userId = Guid.NewGuid().ToString();
+            // Assemble the content user object
+            SocialUser generatedUser = new SocialUser {
+                UserId = userId,
+                UserName = username,
+                NormalizedUserName = username.ToUpper()
+            };
+            GeneratedUsers.Add(generatedUser);
+        });
+
+        return GeneratedUsers;
+    }
+
+    private IEnumerable<Post> GeneratePosts() {
+        message = $"Generating {numberOfPosts} posts";
+        Debug.WriteLine($"Generating {numberOfPosts} posts");
+
+        ConcurrentBag<Post> GeneratedPosts = new ConcurrentBag<Post>();
+
+        Parallel.For(0, numberOfPosts, async i => {
+            //for (int i = 0; i < 100000; i++) {
+            // Generate a random title and content
+            Random random = new Random();
+
+            var randomTitletask = GenerateRandomSentence(random, 1, maxTitle); // Assuming title length between 10 and 20 characters
+            var randomContenttask = GenerateRandomSentence(random, 3, maxContent); // Content length between 5 and 100 characters
+            DateTime startDate = new DateTime(2020, 1, 1);
+            string userId = UserList[random.Next(UserList.Count)].UserId;
+            string postId = Guid.NewGuid().ToString("N");
+
+            int range = ((endDate - startDate).Days + 1);
+            DateTime randomDate = startDate.AddDays(random.Next(range)).AddHours(random.Next(DateTime.Now.Hour)).AddMinutes(random.Next(DateTime.Now.Minute)).AddSeconds(random.Next(DateTime.Now.Second));
+
+
+            Post newPost = new Post {
+                Id = postId,
+                PostDate = randomDate,
+                Upvotes = random.Next(0, 10000),
+                Downvotes = random.Next(0, 10000),
+                ViewCount = 0
+            };
+
+            var viewvoteTask = GenerateViewsandVotes(newPost);
+
+
+
+            await Task.WhenAll(randomTitletask, randomContenttask, viewvoteTask);
+
+            //Build Title
+            string randomTitle = randomTitletask.Result;
+            newPost.Title = randomTitle;
+
+            //Content
+            string randomContent = randomContenttask.Result;
+            newPost.Content = randomContent;
+
+
+
+
+
+            GeneratedPosts.Add(newPost);
+
+            //Create the metadata object
+
+            PostMetadata newMetadate = new PostMetadata {
+                PostId = postId
+            };
+
+            PostMetaList.Add(newMetadate);
+        });
+
+        return GeneratedPosts;
+    }
+
+    private async Task GenerateViewsandVotes(Post post) {
+
+        ICollection<string> UserIdsInteracted = new List<string>();
+        // Get a random number of users to interact with this post
+        Random random = new Random();
+        int numofInteractions = random.Next(1, (numberOfUsers / random.Next(2,5)));
+        // For ever number of users, pick a user that is not the post user and hasnt interacted with this post yet (Will probably be resource intensive)
+        int userCount = UserList.Count();
+        UserIdsInteracted.Add(post.AuthorID);
+        int listCount = 1; //Start at 1 to account for the post author
+        for (int i = 0; i <= numofInteractions; i++) {
+            // Pick a random user in the userlist
+            string userId = UserList
+                .Where(u => !UserIdsInteracted.Any(u2 => u2 == u.UserId))
+                .ElementAt(random.Next((userCount - listCount) - 1))
+                .UserId;
+            UserIdsInteracted.Add(userId);
+            listCount++;
+            // Create a view object using the userId and the postId
+
+            // Create a random view date
+
+            DateTime startDate = post.PostDate ?? DateTime.Now;
+            int range = ((endDate - startDate).Days + 1);
+            DateTime randomDate = startDate.AddDays(random.Next(range)).AddHours(random.Next(DateTime.Now.Hour)).AddMinutes(random.Next(DateTime.Now.Minute)).AddSeconds(random.Next(DateTime.Now.Second));
+
+
+            View GeneratedView = new View {
+                PostId = post.Id,
+                UserId = userId,
+                ViewDate = randomDate,
+                TimesViewed = random.Next(1,7)
+            };
+            ViewList.Add(GeneratedView);
+
+            // Randomly determine if a vote will be made
+
+            if (random.Next() > (Int32.MaxValue / 2)) {
+                // Create a vote objecte
+                bool upVote = false;
+                randomDate = startDate.AddDays(random.Next(range)).AddHours(random.Next(DateTime.Now.Hour)).AddMinutes(random.Next(DateTime.Now.Minute)).AddSeconds(random.Next(DateTime.Now.Second));
+
+                //Randomly determine if will be an upvote of downvote
+                if (random.Next() > (Int32.MaxValue / 2)) {
+                    upVote = true;
+                }
+                Vote GeneratedVote = new Vote {
+                    PostId = post.Id,
+                    UserId = userId,
+                    IsUpvote = upVote,
+                    VoteDate = randomDate,
+                    IsActive = true //Redundant because this field initializes to true
+                };
+
+                VoteList.Add(GeneratedVote);
+
+            }
+
+
+
+            // TODO, add comments
+        }
+    }
 
     private async Task<string> GenerateRandomSentence(Random random, int minPhrases, int maxLength) {
         string[] connectors = {
@@ -295,25 +446,20 @@
             int subjectGroups = random.Next(1, 3);
             StringBuilder subjectString = new StringBuilder();
 
-            for (int b = 0; b < subjectGroups; b++)
-            {
-                if (b > 0)
-                {
+            for (int b = 0; b < subjectGroups; b++) {
+                if (b > 0) {
                     string theconnector = connectors[random.Next(connectors.Length)];
                     sentence.Append($" {theconnector} ");
                     // Decide whether to use the same subject or a pronoun
-                    if (i > 0 && random.NextDouble() < 0.5)
-                    { // 50% chance to switch to a pronoun
+                    if (i > 0 && random.NextDouble() < 0.5) { // 50% chance to switch to a pronoun
                         currentSubject = pronouns[random.Next(pronouns.Length)];
                     }
 
-                    if (i > 0 && random.NextDouble() < 0.5)
-                    { // 50% chance to switch objects
+                    if (i > 0 && random.NextDouble() < 0.5) { // 50% chance to switch objects
                         currentObject = subjects[random.Next(objects.Length)];
                     }
 
                 }
-
 
                 string[] verbs = {
                     "loves", "jumps", "is improving", "is unpredictable", "tastes",
@@ -336,7 +482,7 @@
                     "pauses", "resumes", "joins", "leaves", "enters",
                     "exits", "rises", "falls", "grows", "shrinks",
                     "changes", "remains", "stays", "moves", "stills"
-        };
+                };
 
                 string verb = verbs[random.Next(verbs.Length)];
                 string verb2 = verbs[random.Next(verbs.Length)];
@@ -364,7 +510,7 @@
 
         using var dbContext = dbContextFactory.CreateDbContext();
 
-        string sqlCommand = $"DELETE FROM Posts";
+        string sqlCommand = $"DELETE FROM Posts;DELETE FROM Groups;DELETE FROM PostGroups;DELETE FROM PostMetadatas;DELETE FROM SocialUsers;DELETE FROM Views;DELETE FROM Votes;";
 
         // Execute the raw SQL command
         await dbContext.Database.ExecuteSqlRawAsync(sqlCommand);

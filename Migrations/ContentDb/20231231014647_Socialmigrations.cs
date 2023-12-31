@@ -12,6 +12,31 @@ namespace BlazorSocial.Migrations.ContentDb
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "ApplicationUser",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ApplicationUser", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Groups",
                 columns: table => new
                 {
@@ -43,7 +68,8 @@ namespace BlazorSocial.Migrations.ContentDb
                 columns: table => new
                 {
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NormalizedUserName = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -103,6 +129,7 @@ namespace BlazorSocial.Migrations.ContentDb
                     Upvotes = table.Column<int>(type: "int", nullable: true),
                     Downvotes = table.Column<int>(type: "int", nullable: true),
                     TotalVotes = table.Column<int>(type: "int", nullable: true),
+                    NetVotes = table.Column<int>(type: "int", nullable: true),
                     ViewCount = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -120,7 +147,7 @@ namespace BlazorSocial.Migrations.ContentDb
                 columns: table => new
                 {
                     PostId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ViewDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TimesViewed = table.Column<int>(type: "int", nullable: false)
                 },
@@ -132,6 +159,12 @@ namespace BlazorSocial.Migrations.ContentDb
                         principalTable: "Posts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Views_SocialUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "SocialUsers",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -139,12 +172,19 @@ namespace BlazorSocial.Migrations.ContentDb
                 columns: table => new
                 {
                     PostId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     IsUpvote = table.Column<bool>(type: "bit", nullable: false),
-                    VoteDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    VoteDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
+                    table.ForeignKey(
+                        name: "FK_Votes_ApplicationUser_UserId",
+                        column: x => x.UserId,
+                        principalTable: "ApplicationUser",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Votes_Posts_PostId",
                         column: x => x.PostId,
@@ -179,9 +219,19 @@ namespace BlazorSocial.Migrations.ContentDb
                 column: "PostId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Views_UserId",
+                table: "Views",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Votes_PostId",
                 table: "Votes",
                 column: "PostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Votes_UserId",
+                table: "Votes",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -194,9 +244,6 @@ namespace BlazorSocial.Migrations.ContentDb
                 name: "PostMetadatas");
 
             migrationBuilder.DropTable(
-                name: "SocialUsers");
-
-            migrationBuilder.DropTable(
                 name: "Views");
 
             migrationBuilder.DropTable(
@@ -204,6 +251,12 @@ namespace BlazorSocial.Migrations.ContentDb
 
             migrationBuilder.DropTable(
                 name: "Groups");
+
+            migrationBuilder.DropTable(
+                name: "SocialUsers");
+
+            migrationBuilder.DropTable(
+                name: "ApplicationUser");
 
             migrationBuilder.DropTable(
                 name: "Posts");

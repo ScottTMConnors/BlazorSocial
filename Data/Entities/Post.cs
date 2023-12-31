@@ -23,5 +23,9 @@ namespace BlazorSocial.Data.Entities {
 
         [NotMapped]
         public IEnumerable<Group>? Groups { get; set; }
+        [NotMapped]
+        public IEnumerable<Vote>? Votes { get; set; }
+        [NotMapped]
+        public IEnumerable<View>? Views { get; set; }
     }
 }

@@ -10,7 +10,7 @@ namespace BlazorSocial.Data.Entities {
         public bool IsUpvote { get; set; }
         public DateTime? VoteDate { get; set; }
         public Post? Post { get; set; }
-        [NotMapped]
         public ApplicationUser? User { get; set; }
+        public bool IsActive { get; set; } = true;
     }
 }

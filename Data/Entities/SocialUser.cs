@@ -6,6 +6,7 @@ namespace BlazorSocial.Data.Entities {
         [Key]
         public string UserId { get; set; }
         public string UserName { get; set; }
+        public string NormalizedUserName { get; set; }
         [NotMapped]
         public ApplicationUser? User { get; set; }
     }

@@ -9,6 +9,7 @@ namespace BlazorSocial.Data.Entities {
         public int? Upvotes { get; set; }
         public int? Downvotes { get; set; }
         public int? TotalVotes { get; set; }
+        public int? NetVotes { get; set; }
         public int? ViewCount { get; set; }
         [NotMapped]
         public IEnumerable<Vote>? Votes { get; set; }
