@@ -28,7 +28,7 @@
 
 <h3>View All Posts</h3>
 
-<Virtualize Context="post" ItemsProvider="@LoadPosts">
+<Virtualize Context="post" ItemsProvider="@LoadPosts" ItemSize="400" OverscanCount="1">
     <ItemContent>
         <a href="/post/@post.Id" target="_blank" class="post-card" style="text-decoration:none;color:black;">
             <div>
@@ -65,36 +65,24 @@
             using var dbContext = dbContextFactory.CreateDbContext();
             var newPosts = await dbContext.Posts
                 .OrderByDescending(post => post.PostDate)
-                .Select(post => new {
-                    post.Id,
-                    post.AuthorID,
-                    post.Title,
-                    ContentSummary = post.Content.Substring(0, 1000),
-                    post.PostDate,
-                    post.Upvotes,
-                    post.Downvotes,
-                    post.ViewCount
+                .Select(post => new ViewPostObject {
+                    Id = post.Id,
+                    Title = post.Title,
+                    Content = post.Content.Substring(0, 1000),
+                    PostDate = post.PostDate,
+                    DateString = ConvertDateToString(post.PostDate),
+                    Upvotes = post.Upvotes,
+                    Downvotes = post.Downvotes,
+                    AuthorID = post.AuthorID,
+                    AuthorName = "",
+                    ViewCount = post.ViewCount
                 })
                 .Skip(postsCache.Count)
                 .Take(request.Count - requiredPosts.Count)
                 .ToListAsync();
 
-
-            // Transform and add to cache
-            var newViewPosts = newPosts.Select(post => new ViewPostObject {
-                Id = post.Id,
-                Title = post.Title,
-                Content = post.ContentSummary,
-                PostDate = post.PostDate,
-                DateString = ConvertDateToString(post.PostDate),
-                Upvotes = post.Upvotes,
-                Downvotes = post.Downvotes,
-                AuthorID = post.AuthorID,
-                AuthorName = "",
-                ViewCount = post.ViewCount
-            }).ToList();
-            postsCache.AddRange(newViewPosts);
-            requiredPosts.AddRange(newViewPosts);
+            postsCache.AddRange(newPosts);
+            requiredPosts.AddRange(newPosts);
         }
 
         // Calculate a dynamic total item count
@@ -103,7 +91,7 @@
         return new ItemsProviderResult<ViewPostObject>(requiredPosts, dynamicTotalCount);
     }
 
-    public string ConvertDateToString(DateTime? date) {
+    public static string ConvertDateToString(DateTime? date) {
         if (!date.HasValue) {
             return "Invalid date";
         }
