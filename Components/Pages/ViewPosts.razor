@@ -10,6 +10,7 @@
 @using Microsoft.AspNetCore.Identity;
 @using Microsoft.EntityFrameworkCore;
 @using Microsoft.AspNetCore.Components.Web.Virtualization;
+@using System.Text.Json
 
 
 
@@ -19,7 +20,11 @@
 
 @inject UserManager<ApplicationUser> UserManager
 @inject NavigationManager NavigationManager
+
+@inject IJSRuntime JSRuntime
+
 <link rel="stylesheet" href="ViewPosts.css" asp-append-version="true" />
+<script src="localStorageManager.js" asp-append-version="true"></script>
 
 
 <head>
@@ -47,63 +52,78 @@
     private string privateString = "this string is private";
 
 
-    private List<ViewPostObject> postsCache = new List<ViewPostObject>();
+    //private List<ViewPostObject> postsCache = new List<ViewPostObject>();
+
+    private int dynamicTotalCount = 0;
+
+    private async Task<string> GetCachedPost(string key) {
+        return await JSRuntime.InvokeAsync<string>("localStorageManager.getItem", key);
+    }
+
+    private async Task SetCachedPost(string key, string value) {
+        await JSRuntime.InvokeVoidAsync("localStorageManager.setItem", key, value);
+    }
+
+    private async Task RemoveCachedPost(string key) {
+        await JSRuntime.InvokeVoidAsync("localStorageManager.removeItem", key);
+    }
 
     private async ValueTask<ItemsProviderResult<ViewPostObject>> LoadPosts(ItemsProviderRequest request) {
         var requiredPosts = new List<ViewPostObject>();
 
-        // Check cache first
-        for (int i = request.StartIndex; i < request.StartIndex + request.Count; i++) {
-            if (i < postsCache.Count) {
-                requiredPosts.Add(postsCache[i]);
+        int endIndex = request.StartIndex + request.Count;
+        bool fetchedFromDb = false;
+
+        for (int i = request.StartIndex; i < endIndex; i++) {
+            var cachedPostJson = await GetCachedPost($"post_{i}");
+            if (!string.IsNullOrEmpty(cachedPostJson)) {
+                var post = JsonSerializer.Deserialize<ViewPostObject>(cachedPostJson);
+                requiredPosts.Add(post);
             } else {
-                break; // If not all required posts are in the cache, break and load from DB
+                // If any post is not found in cache, fetch remaining from DB
+                fetchedFromDb = true;
+                var newPosts = await LoadPostsFromDb(i, endIndex - i);
+                foreach (var post in newPosts) {
+                    var postJson = JsonSerializer.Serialize(post);
+                    await SetCachedPost($"post_{post.Id}", postJson);
+                    requiredPosts.Add(post);
+                }
+                break;
             }
         }
 
-        if (requiredPosts.Count < request.Count) {
+        if (fetchedFromDb) {
+            // Update dynamic total count based on DB fetch
             using var dbContext = dbContextFactory.CreateDbContext();
-            var newPosts = await dbContext.Posts
-                .OrderByDescending(post => post.PostDate)
-                .Select(post => new {
-                    post.Id,
-                    post.AuthorID,
-                    post.Title,
-                    ContentSummary = post.Content.Substring(0, 1000),
-                    post.PostDate,
-                    post.Upvotes,
-                    post.Downvotes,
-                    post.ViewCount
-                })
-                .Skip(postsCache.Count)
-                .Take(request.Count - requiredPosts.Count)
-                .ToListAsync();
-
-
-            // Transform and add to cache
-            var newViewPosts = newPosts.Select(post => new ViewPostObject {
-                Id = post.Id,
-                Title = post.Title,
-                Content = post.ContentSummary,
-                PostDate = post.PostDate,
-                DateString = ConvertDateToString(post.PostDate),
-                Upvotes = post.Upvotes,
-                Downvotes = post.Downvotes,
-                AuthorID = post.AuthorID,
-                AuthorName = "",
-                ViewCount = post.ViewCount
-            }).ToList();
-            postsCache.AddRange(newViewPosts);
-            requiredPosts.AddRange(newViewPosts);
+            dynamicTotalCount = await dbContext.Posts.CountAsync();
         }
-
-        // Calculate a dynamic total item count
-        int dynamicTotalCount = postsCache.Count + (requiredPosts.Any() ? 10 : 0);
 
         return new ItemsProviderResult<ViewPostObject>(requiredPosts, dynamicTotalCount);
     }
 
-    public string ConvertDateToString(DateTime? date) {
+    private async Task<List<ViewPostObject>> LoadPostsFromDb(int startIndex, int count) {
+        using var dbContext = dbContextFactory.CreateDbContext();
+        var newPosts = await dbContext.Posts
+            .OrderByDescending(post => post.PostDate)
+            .Skip(startIndex)
+            .Take(count)
+            .Select(post => new ViewPostObject {
+                    Id = post.Id,
+                    Title = post.Title,
+                    Content = post.Content.Substring(0, 1000),
+                    PostDate = post.PostDate,
+                    DateString = ConvertDateToString(post.PostDate),
+                    Upvotes = post.Upvotes,
+                    Downvotes = post.Downvotes,
+                    AuthorID = post.AuthorID,
+                    AuthorName = "",
+                    ViewCount = post.ViewCount
+                })
+            .ToListAsync();
+        return newPosts;
+    }
+
+    public static string ConvertDateToString(DateTime? date) {
         if (!date.HasValue) {
             return "Invalid date";
         }
