@@ -8,18 +8,10 @@ namespace BlazorSocial.Data.Entities {
         public int? PostTypeID { get; set; }
         public string? AuthorID { get; set; }
         public DateTime? PostDate { get; set; }
-        [NotMapped]
-        public int? Upvotes { get; set; }
-        [NotMapped]
-        public int? Downvotes { get; set; }
         public PostType? PostType { get; set; }
         [NotMapped]
         public SocialUser? Author { get; set; }
-        [NotMapped]
-        public int? TotalVotes { get; set; }
-        public int? ViewCount { get; set; }
         public PostMetadata? PostMetadata { get; set; }
-
         [NotMapped]
         public IEnumerable<Group>? Groups { get; set; }
         [NotMapped]
