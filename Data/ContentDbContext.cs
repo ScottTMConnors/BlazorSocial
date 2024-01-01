@@ -20,5 +20,13 @@ namespace BlazorSocial.Data {
         public DbSet<PostMetadata> PostMetadatas { get; set; }
         public DbSet<SocialUser> SocialUsers { get; set; }
 
+
+        //protected override void OnModelCreating(ModelBuilder modelBuilder) {
+        //    modelBuilder.Entity<Post>()
+        //        .HasOne(p => p.PostMetadata)
+        //        .WithOne(pm => pm.Post)
+        //        .HasForeignKey<PostMetadata>(pm => pm.PostId);
+        //}
+
     }
 }

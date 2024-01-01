@@ -18,7 +18,6 @@ namespace BlazorSocial.Data.Entities {
         [NotMapped]
         public int? TotalVotes { get; set; }
         public int? ViewCount { get; set; }
-        [NotMapped]
         public PostMetadata? PostMetadata { get; set; }
 
         [NotMapped]

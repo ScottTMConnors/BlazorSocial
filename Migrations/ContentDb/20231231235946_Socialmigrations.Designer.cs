@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazorSocial.Migrations.ContentDb
 {
     [DbContext(typeof(ContentDbContext))]
-    [Migration("20231231014647_Socialmigrations")]
+    [Migration("20231231235946_Socialmigrations")]
     partial class Socialmigrations
     {
         /// <inheritdoc />
@@ -24,58 +24,6 @@ namespace BlazorSocial.Migrations.ContentDb
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("BlazorSocial.Data.ApplicationUser", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("NormalizedEmail")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NormalizedUserName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("UserName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ApplicationUser");
-                });
 
             modelBuilder.Entity("BlazorSocial.Data.Entities.Group", b =>
                 {
@@ -147,15 +95,14 @@ namespace BlazorSocial.Migrations.ContentDb
 
             modelBuilder.Entity("BlazorSocial.Data.Entities.PostMetadata", b =>
                 {
+                    b.Property<string>("PostId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int?>("Downvotes")
                         .HasColumnType("int");
 
                     b.Property<int?>("NetVotes")
                         .HasColumnType("int");
-
-                    b.Property<string>("PostId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int?>("TotalVotes")
                         .HasColumnType("int");
@@ -166,7 +113,7 @@ namespace BlazorSocial.Migrations.ContentDb
                     b.Property<int?>("ViewCount")
                         .HasColumnType("int");
 
-                    b.HasIndex("PostId");
+                    b.HasKey("PostId");
 
                     b.ToTable("PostMetadatas");
                 });
@@ -286,8 +233,8 @@ namespace BlazorSocial.Migrations.ContentDb
             modelBuilder.Entity("BlazorSocial.Data.Entities.PostMetadata", b =>
                 {
                     b.HasOne("BlazorSocial.Data.Entities.Post", "Post")
-                        .WithMany()
-                        .HasForeignKey("PostId")
+                        .WithOne("PostMetadata")
+                        .HasForeignKey("BlazorSocial.Data.Entities.PostMetadata", "PostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -321,7 +268,7 @@ namespace BlazorSocial.Migrations.ContentDb
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BlazorSocial.Data.ApplicationUser", "User")
+                    b.HasOne("BlazorSocial.Data.Entities.SocialUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -330,6 +277,11 @@ namespace BlazorSocial.Migrations.ContentDb
                     b.Navigation("Post");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BlazorSocial.Data.Entities.Post", b =>
+                {
+                    b.Navigation("PostMetadata");
                 });
 #pragma warning restore 612, 618
         }

@@ -12,31 +12,6 @@ namespace BlazorSocial.Migrations.ContentDb
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "ApplicationUser",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ApplicationUser", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Groups",
                 columns: table => new
                 {
@@ -134,6 +109,7 @@ namespace BlazorSocial.Migrations.ContentDb
                 },
                 constraints: table =>
                 {
+                    table.PrimaryKey("PK_PostMetadatas", x => x.PostId);
                     table.ForeignKey(
                         name: "FK_PostMetadatas_Posts_PostId",
                         column: x => x.PostId,
@@ -180,16 +156,16 @@ namespace BlazorSocial.Migrations.ContentDb
                 constraints: table =>
                 {
                     table.ForeignKey(
-                        name: "FK_Votes_ApplicationUser_UserId",
-                        column: x => x.UserId,
-                        principalTable: "ApplicationUser",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_Votes_Posts_PostId",
                         column: x => x.PostId,
                         principalTable: "Posts",
                         principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Votes_SocialUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "SocialUsers",
+                        principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -201,11 +177,6 @@ namespace BlazorSocial.Migrations.ContentDb
             migrationBuilder.CreateIndex(
                 name: "IX_PostGroups_PostId",
                 table: "PostGroups",
-                column: "PostId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PostMetadatas_PostId",
-                table: "PostMetadatas",
                 column: "PostId");
 
             migrationBuilder.CreateIndex(
@@ -253,13 +224,10 @@ namespace BlazorSocial.Migrations.ContentDb
                 name: "Groups");
 
             migrationBuilder.DropTable(
-                name: "SocialUsers");
-
-            migrationBuilder.DropTable(
-                name: "ApplicationUser");
-
-            migrationBuilder.DropTable(
                 name: "Posts");
+
+            migrationBuilder.DropTable(
+                name: "SocialUsers");
 
             migrationBuilder.DropTable(
                 name: "PostTypes");
