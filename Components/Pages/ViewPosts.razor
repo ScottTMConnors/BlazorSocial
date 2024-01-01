@@ -64,7 +64,6 @@
         if (requiredPosts.Count < request.Count) {
             using var dbContext = dbContextFactory.CreateDbContext();
             var newPosts = await dbContext.Posts
-                .Include(post => post.PostMetadata)
                 .OrderByDescending(post => post.PostDate)
                 .Select(post => new ViewPostObject {
                     Id = post.Id,
@@ -72,11 +71,8 @@
                     Content = post.Content.Substring(0, 1000),
                     PostDate = post.PostDate,
                     DateString = ConvertDateToString(post.PostDate),
-                    Upvotes = post.Upvotes,
-                    Downvotes = post.Downvotes,
                     AuthorID = post.AuthorID,
                     AuthorName = "",
-                    ViewCount = post.ViewCount,
                     PostMetadata = post.PostMetadata
                 })
                 .Skip(postsCache.Count)

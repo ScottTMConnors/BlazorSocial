@@ -3,6 +3,7 @@
 @using System.Diagnostics;
 @using Data;
 @using Data.Entities;
+@using Data.ComponentObjects;
 
 @inject NavigationManager NavigationManager
 
@@ -14,7 +15,9 @@
 <br />
 <p>@_currentPost.PostDate</p>
 <br />
-<p>Upvotes: @_currentPost.Upvotes | Downvotes: @_currentPost.Downvotes</p>
+<p>Views: @_currentPost.PostMetadata.ViewCount</p>
+<br />
+<p>Score: @_currentPost.PostMetadata.NetVotes | Upvotes: @_currentPost.PostMetadata.Upvotes | Downvotes: @_currentPost.PostMetadata.Downvotes </p>
 
 
 @code {
@@ -31,8 +34,35 @@
         }
 
         //Get the post object associated with this id
-        _currentPost = DbContext.Posts.Where(post => post.Id == Id).FirstOrDefault();
+        _currentPost = DbContext.Posts.Where(post => post.Id == Id).Select(post => new ViewPostObject {
+            Id = post.Id,
+            Title = post.Title,
+            Content = post.Content.Substring(0, 1000),
+            PostDate = post.PostDate,
+            DateString = ConvertDateToString(post.PostDate),
+            AuthorID = post.AuthorID,
+            AuthorName = "",
+            PostMetadata = post.PostMetadata
+        }).FirstOrDefault();
 
+    }
+
+    public static string ConvertDateToString(DateTime? date) {
+        if (!date.HasValue) {
+            return "Invalid date";
+        }
+
+        TimeSpan difference = DateTime.Now - date.Value;
+
+        if (difference.TotalDays >= 1) {
+            return date.Value.ToString();
+        } else if (difference.TotalHours >= 1) {
+            return $"{(int)difference.TotalHours}h";
+        } else if (difference.TotalMinutes >= 1) {
+            return $"{(int)difference.TotalMinutes}m";
+        } else {
+            return $"{(int)difference.TotalSeconds}s";
+        }
     }
 
 }
