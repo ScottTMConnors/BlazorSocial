@@ -1,12 +1,17 @@
 ﻿@page "/post/{Id}"
 
 @using System.Diagnostics;
+@using Microsoft.AspNetCore.Authorization
 @using Data;
 @using Data.Entities;
 @using Data.ComponentObjects;
+@using Microsoft.Data.SqlClient
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
 
 @inject NavigationManager NavigationManager
-
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ContentDbContext DbContext
 
 <h1>@_currentPost.Title</h1>
@@ -25,13 +30,22 @@
     [Parameter]
     public string Id { get; set; }
 
+    private bool isAuthenticated = false;
+
     private Post? _currentPost;
 
-    protected override void OnInitialized() {
+    private string? userId;
+
+    //private SocialUser? user;
+
+    protected override async Task OnInitializedAsync() {
 
         if (Id == null || Id == "") {
             NavigationManager.NavigateTo("/ViewPosts");
         }
+
+
+
 
         //Get the post object associated with this id
         _currentPost = DbContext.Posts.Where(post => post.Id == Id).Select(post => new ViewPostObject {
@@ -45,6 +59,48 @@
             PostMetadata = post.PostMetadata
         }).FirstOrDefault();
 
+        if (_currentPost == null) {
+            NavigationManager.NavigateTo("/ViewPosts");
+        }
+
+        //Get the user requesting to determine if they can interact with the post
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var AuthUser = authState.User;
+
+        string sql = "";
+
+        if (AuthUser.Identity.IsAuthenticated) {
+            isAuthenticated = true;
+            string userId = AuthUser.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            //user = DbContext.SocialUsers.Where(user => user.UserId == userId).FirstOrDefault();
+
+            var UserView = DbContext.Views.Where(view => view.UserId == userId).FirstOrDefault();
+            if (UserView == null) {
+                // Create a new view record and update viewcount
+            } else {
+                // Update the timesviewed field for the view
+            }
+
+            //Update the Post Viewcount
+            sql = "UPDATE PostMetadatas SET ViewCount = ISNULL(ViewCount, 0) + 1 WHERE PostId = @postId";
+        } else {
+
+            string ipAddress = HttpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+
+            // create do a view lookup for this ip
+            var AnonView = DbContext.AnonViews.Where(view => view.IPAddress == ipAddress).FirstOrDefault();
+
+            if (AnonView == null) {
+                // Create a new view record and update viewcount
+            } else {
+                // Update the timesviewed field for the view
+            }
+            sql = "UPDATE PostMetadatas SET AnonViewCount = ISNULL(ViewCount, 0) + 1 WHERE PostId = @postId";
+        }
+
+        // Execute the command
+        await DbContext.Database.ExecuteSqlRawAsync(sql, new SqlParameter("@postId", _currentPost.Id));
+        
     }
 
     public static string ConvertDateToString(DateTime? date) {

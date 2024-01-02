@@ -17,6 +17,7 @@ namespace BlazorSocial.Data {
         public DbSet<Vote> Votes { get; set; }
         public DbSet<Group> Groups { get; set; }
         public DbSet<View> Views { get; set; }
+        public DbSet<AnonView> AnonViews { get; set; }
         public DbSet<PostMetadata> PostMetadatas { get; set; }
         public DbSet<SocialUser> SocialUsers { get; set; }
 
