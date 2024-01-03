@@ -176,10 +176,7 @@
 
             Post newPost = new Post {
                 Id = postId,
-                PostDate = randomDate,
-                Upvotes = random.Next(0, 10000),
-                Downvotes = random.Next(0, 10000),
-                ViewCount = 0
+                PostDate = randomDate
             };
 
             var viewvoteTask = GenerateViewsandVotes(newPost);

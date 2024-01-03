@@ -1,5 +1,7 @@
 ﻿@page "/post/{Id}"
 
+@rendermode InteractiveServer
+
 @using System.Diagnostics;
 @using Microsoft.AspNetCore.Authorization
 @using Data;
@@ -8,11 +10,16 @@
 @using Microsoft.Data.SqlClient
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.Identity
+
 @inject IHttpContextAccessor HttpContextAccessor
 
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ContentDbContext DbContext
+
+@inject SignInManager<ApplicationUser> SignInManager
+
 
 <h1>@_currentPost.Title</h1>
 <br/>
@@ -22,7 +29,14 @@
 <br />
 <p>Views: @_currentPost.PostMetadata.ViewCount</p>
 <br />
-<p>Score: @_currentPost.PostMetadata.NetVotes | Upvotes: @_currentPost.PostMetadata.Upvotes | Downvotes: @_currentPost.PostMetadata.Downvotes </p>
+@if (isAuthenticated) {
+    <p>Hello, your user ID is @userId.</p>
+    <!-- Content for authenticated users -->
+} else {
+    <p>Score: @_currentPost.PostMetadata.NetVotes | Upvotes: @_currentPost.PostMetadata.Upvotes | Downvotes: @_currentPost.PostMetadata.Downvotes </p>
+}
+
+
 
 
 @code {
@@ -62,7 +76,6 @@
         if (_currentPost == null) {
             NavigationManager.NavigateTo("/ViewPosts");
         }
-
         //Get the user requesting to determine if they can interact with the post
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var AuthUser = authState.User;
@@ -76,13 +89,22 @@
 
             var UserView = DbContext.Views.Where(view => view.UserId == userId).FirstOrDefault();
             if (UserView == null) {
+                sql = "UPDATE PostMetadatas SET ViewCount = ISNULL(ViewCount, 0) + 1 WHERE PostId = @postId";
+                await DbContext.Database.ExecuteSqlRawAsync(sql, new SqlParameter("@postId", _currentPost.Id));
+                _currentPost.PostMetadata.ViewCount += 1;
                 // Create a new view record and update viewcount
+                View newView = new View {
+                        PostId = _currentPost.Id,
+                        UserId = userId,
+                        ViewDate = DateTime.Now,
+                        TimesViewed = 1
+                    };
+                DbContext.Views.Add(newView);
+                DbContext.SaveChangesAsync();
             } else {
                 // Update the timesviewed field for the view
             }
 
-            //Update the Post Viewcount
-            sql = "UPDATE PostMetadatas SET ViewCount = ISNULL(ViewCount, 0) + 1 WHERE PostId = @postId";
         } else {
 
             string ipAddress = HttpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
@@ -92,14 +114,20 @@
 
             if (AnonView == null) {
                 // Create a new view record and update viewcount
+                sql = "UPDATE PostMetadatas SET AnonViewCount = ISNULL(AnonViewCount, 0) + 1 WHERE PostId = @postId";
+                DbContext.Database.ExecuteSqlRawAsync(sql, new SqlParameter("@postId", _currentPost.Id));
+                _currentPost.PostMetadata.AnonViewCount += 1;
+                AnonView newAnonView = new AnonView {
+                        PostId = _currentPost.Id,
+                        IPAddress = ipAddress,
+                        ViewDate = DateTime.Now,
+                        TimesViewed = 1
+                    };
             } else {
                 // Update the timesviewed field for the view
             }
-            sql = "UPDATE PostMetadatas SET AnonViewCount = ISNULL(ViewCount, 0) + 1 WHERE PostId = @postId";
-        }
 
-        // Execute the command
-        await DbContext.Database.ExecuteSqlRawAsync(sql, new SqlParameter("@postId", _currentPost.Id));
+        }
         
     }
 
