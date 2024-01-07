@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BlazorSocial.Data.Entities {
     //Identical to view, but without user being signed in
-    [Keyless]
+    [PrimaryKey(nameof(PostId), nameof(IPAddress))]
     public class AnonView {
         [ForeignKey("Post")]
         public string PostId { get; set; }

@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Mono.TextTemplating;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BlazorSocial.Data.Entities {
-    [Keyless]
+    [PrimaryKey(nameof(PostId), nameof(UserId))]
     public class View {
         [ForeignKey("Post")]
         public string PostId { get; set; }

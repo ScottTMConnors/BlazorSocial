@@ -29,13 +29,16 @@
 <br />
 <p>Views: @_currentPost.PostMetadata.ViewCount</p>
 <br />
-@if (isAuthenticated) {
-    <p>Hello, your user ID is @userId.</p>
-    <!-- Content for authenticated users -->
-} else {
-    <p>Score: @_currentPost.PostMetadata.NetVotes | Upvotes: @_currentPost.PostMetadata.Upvotes | Downvotes: @_currentPost.PostMetadata.Downvotes </p>
-}
+@if (authenticated) {
+    <button style="outline: none !important;"  class="votebutton @(((voteObject.IsUpvote) && (voteObject.IsActive)) ? "text-warning" : "text-secondary")" @onclick="Upvote">
+        <i class="bi bi-arrow-up"></i>
+    </button>
 
+    <button style="outline: none !important;" class="votebutton @((!(voteObject.IsUpvote) && (voteObject.IsActive)) ? "text-purple" : "text-secondary")" @onclick="Downvote">
+        <i class="bi bi-arrow-down"></i>
+    </button>
+}
+<p>Score: @_currentPost.PostMetadata.NetVotes | Upvotes: @_currentPost.PostMetadata.Upvotes | Downvotes: @_currentPost.PostMetadata.Downvotes </p>
 
 
 
@@ -44,22 +47,22 @@
     [Parameter]
     public string Id { get; set; }
 
-    private bool isAuthenticated = false;
+    private bool authenticated = false;
 
     private Post? _currentPost;
 
     private string? userId;
 
+    private Vote? voteObject;
+
     //private SocialUser? user;
+
 
     protected override async Task OnInitializedAsync() {
 
         if (Id == null || Id == "") {
             NavigationManager.NavigateTo("/ViewPosts");
         }
-
-
-
 
         //Get the post object associated with this id
         _currentPost = DbContext.Posts.Where(post => post.Id == Id).Select(post => new ViewPostObject {
@@ -76,60 +79,71 @@
         if (_currentPost == null) {
             NavigationManager.NavigateTo("/ViewPosts");
         }
-        //Get the user requesting to determine if they can interact with the post
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var AuthUser = authState.User;
 
-        string sql = "";
+    }
 
-        if (AuthUser.Identity.IsAuthenticated) {
-            isAuthenticated = true;
-            string userId = AuthUser.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            //user = DbContext.SocialUsers.Where(user => user.UserId == userId).FirstOrDefault();
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if (firstRender) {
+            //Get the user requesting to determine if they can interact with the post
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var AuthUser = authState.User;
 
-            var UserView = DbContext.Views.Where(view => view.UserId == userId).FirstOrDefault();
-            if (UserView == null) {
-                sql = "UPDATE PostMetadatas SET ViewCount = ISNULL(ViewCount, 0) + 1 WHERE PostId = @postId";
-                await DbContext.Database.ExecuteSqlRawAsync(sql, new SqlParameter("@postId", _currentPost.Id));
-                _currentPost.PostMetadata.ViewCount += 1;
-                // Create a new view record and update viewcount
-                View newView = new View {
+            string sql = "";
+
+            if (AuthUser.Identity.IsAuthenticated) {
+                authenticated = true;
+                userId = AuthUser.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                //user = DbContext.SocialUsers.Where(user => user.UserId == userId).FirstOrDefault();
+
+                var UserView = DbContext.Views.Where(view => (view.UserId == userId) && (view.PostId == _currentPost.Id)).FirstOrDefault();
+                if (UserView == null) {
+                    sql = "UPDATE PostMetadatas SET ViewCount = ISNULL(ViewCount, 0) + 1 WHERE PostId = @postId";
+                    await DbContext.Database.ExecuteSqlRawAsync(sql, new SqlParameter("@postId", _currentPost.Id));
+                    _currentPost.PostMetadata.ViewCount += 1;
+                    // Create a new view record and update viewcount
+                    View newView = new View {
                         PostId = _currentPost.Id,
                         UserId = userId,
                         ViewDate = DateTime.Now,
                         TimesViewed = 1
                     };
-                DbContext.Views.Add(newView);
-                DbContext.SaveChangesAsync();
+                    DbContext.Views.Add(newView);
+                    await DbContext.SaveChangesAsync();
+                } else {
+                    // Update the timesviewed field for the view
+                }
+
+                voteObject = DbContext.Votes.Where(vote => (vote.UserId == userId) && (vote.PostId == _currentPost.Id)).FirstOrDefault() ?? new Vote { UserId = userId, PostId = _currentPost.Id};
             } else {
-                // Update the timesviewed field for the view
-            }
 
-        } else {
+                string ipAddress = HttpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
 
-            string ipAddress = HttpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+                // create do a view lookup for this ip
+                var AnonView = DbContext.AnonViews.Where(view => (view.IPAddress == ipAddress) && (view.PostId == _currentPost.Id)).FirstOrDefault();
 
-            // create do a view lookup for this ip
-            var AnonView = DbContext.AnonViews.Where(view => view.IPAddress == ipAddress).FirstOrDefault();
-
-            if (AnonView == null) {
-                // Create a new view record and update viewcount
-                sql = "UPDATE PostMetadatas SET AnonViewCount = ISNULL(AnonViewCount, 0) + 1 WHERE PostId = @postId";
-                DbContext.Database.ExecuteSqlRawAsync(sql, new SqlParameter("@postId", _currentPost.Id));
-                _currentPost.PostMetadata.AnonViewCount += 1;
-                AnonView newAnonView = new AnonView {
+                if (AnonView == null) {
+                    // Create a new view record and update viewcount
+                    sql = "UPDATE PostMetadatas SET AnonViewCount = ISNULL(AnonViewCount, 0) + 1 WHERE PostId = @postId";
+                    DbContext.Database.ExecuteSqlRawAsync(sql, new SqlParameter("@postId", _currentPost.Id));
+                    _currentPost.PostMetadata.AnonViewCount += 1;
+                    AnonView newAnonView = new AnonView {
                         PostId = _currentPost.Id,
                         IPAddress = ipAddress,
                         ViewDate = DateTime.Now,
                         TimesViewed = 1
                     };
-            } else {
-                // Update the timesviewed field for the view
+                    DbContext.AnonViews.Add(newAnonView);
+                    await DbContext.SaveChangesAsync();
+                } else {
+                    // Update the timesviewed field for the view
+                }
+
             }
 
+            StateHasChanged();
         }
-        
     }
+
 
     public static string ConvertDateToString(DateTime? date) {
         if (!date.HasValue) {
@@ -149,4 +163,67 @@
         }
     }
 
+    private void Upvote() {
+        UpdateVote(true);
+    }
+
+    private void Downvote() {
+        UpdateVote(false);
+    }
+
+    private void UpdateVote(bool voteType) {
+        if (voteObject.IsUpvote == voteType && voteObject.IsActive) {
+            voteObject.IsActive = false;
+            if (voteType) {
+                _currentPost.PostMetadata.Upvotes += -1;
+                _currentPost.PostMetadata.NetVotes += -1;
+            } else {
+                _currentPost.PostMetadata.Downvotes += -1;
+                _currentPost.PostMetadata.NetVotes += 1;
+            }
+        } else {
+
+            if (voteType) {
+                _currentPost.PostMetadata.Upvotes += 1;
+                _currentPost.PostMetadata.NetVotes += 1;
+                if (voteObject.IsActive) {
+                    _currentPost.PostMetadata.Downvotes += -1;
+                    _currentPost.PostMetadata.NetVotes += 1;
+                }
+            } else {
+                _currentPost.PostMetadata.Downvotes += 1;
+                _currentPost.PostMetadata.NetVotes += -1;
+                if (voteObject.IsActive) {
+                    _currentPost.PostMetadata.Upvotes += -1;
+                    _currentPost.PostMetadata.NetVotes += -1;
+                }
+            }
+            voteObject.IsActive = true;
+            voteObject.IsUpvote = voteType;
+        }
+        // Implement your logic here
+        DbContext.Update(voteObject);
+        DbContext.SaveChangesAsync();
+
+        Debug.WriteLine($"User has {voteType}d.");
+        StateHasChanged();
+    }
+
 }
+
+<style>
+    .text-purple {
+        color: purple;
+    }
+
+    .votebutton:focus {
+        outline: none !important;
+    }
+
+    .votebutton {
+        padding: 10px;
+        border: none;
+        background: none;
+    }
+
+</style>

@@ -60,8 +60,7 @@ namespace BlazorSocial.Migrations.ContentDb
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PostTypeID = table.Column<int>(type: "int", nullable: true),
                     AuthorID = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PostDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ViewCount = table.Column<int>(type: "int", nullable: true)
+                    PostDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -74,14 +73,37 @@ namespace BlazorSocial.Migrations.ContentDb
                 });
 
             migrationBuilder.CreateTable(
+                name: "AnonViews",
+                columns: table => new
+                {
+                    PostId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    IPAddress = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ViewDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TimesViewed = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AnonViews", x => new { x.PostId, x.IPAddress });
+                    table.ForeignKey(
+                        name: "FK_AnonViews_Posts_PostId",
+                        column: x => x.PostId,
+                        principalTable: "Posts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PostGroups",
                 columns: table => new
                 {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     PostId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     GroupId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
+                    table.PrimaryKey("PK_PostGroups", x => x.Id);
                     table.ForeignKey(
                         name: "FK_PostGroups_Groups_GroupId",
                         column: x => x.GroupId,
@@ -105,7 +127,8 @@ namespace BlazorSocial.Migrations.ContentDb
                     Downvotes = table.Column<int>(type: "int", nullable: true),
                     TotalVotes = table.Column<int>(type: "int", nullable: true),
                     NetVotes = table.Column<int>(type: "int", nullable: true),
-                    ViewCount = table.Column<int>(type: "int", nullable: true)
+                    ViewCount = table.Column<int>(type: "int", nullable: true),
+                    AnonViewCount = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -129,6 +152,7 @@ namespace BlazorSocial.Migrations.ContentDb
                 },
                 constraints: table =>
                 {
+                    table.PrimaryKey("PK_Views", x => new { x.PostId, x.UserId });
                     table.ForeignKey(
                         name: "FK_Views_Posts_PostId",
                         column: x => x.PostId,
@@ -155,6 +179,7 @@ namespace BlazorSocial.Migrations.ContentDb
                 },
                 constraints: table =>
                 {
+                    table.PrimaryKey("PK_Votes", x => new { x.PostId, x.UserId });
                     table.ForeignKey(
                         name: "FK_Votes_Posts_PostId",
                         column: x => x.PostId,
@@ -185,19 +210,9 @@ namespace BlazorSocial.Migrations.ContentDb
                 column: "PostTypeID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Views_PostId",
-                table: "Views",
-                column: "PostId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Views_UserId",
                 table: "Views",
                 column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Votes_PostId",
-                table: "Votes",
-                column: "PostId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Votes_UserId",
@@ -208,6 +223,9 @@ namespace BlazorSocial.Migrations.ContentDb
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AnonViews");
+
             migrationBuilder.DropTable(
                 name: "PostGroups");
 

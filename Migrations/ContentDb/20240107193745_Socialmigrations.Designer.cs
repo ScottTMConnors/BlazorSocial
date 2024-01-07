@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazorSocial.Migrations.ContentDb
 {
     [DbContext(typeof(ContentDbContext))]
-    [Migration("20231231235946_Socialmigrations")]
+    [Migration("20240107193745_Socialmigrations")]
     partial class Socialmigrations
     {
         /// <inheritdoc />
@@ -24,6 +24,25 @@ namespace BlazorSocial.Migrations.ContentDb
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("BlazorSocial.Data.Entities.AnonView", b =>
+                {
+                    b.Property<string>("PostId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("IPAddress")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("TimesViewed")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ViewDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("PostId", "IPAddress");
+
+                    b.ToTable("AnonViews");
+                });
 
             modelBuilder.Entity("BlazorSocial.Data.Entities.Group", b =>
                 {
@@ -66,9 +85,6 @@ namespace BlazorSocial.Migrations.ContentDb
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ViewCount")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("PostTypeID");
@@ -78,6 +94,12 @@ namespace BlazorSocial.Migrations.ContentDb
 
             modelBuilder.Entity("BlazorSocial.Data.Entities.PostGroup", b =>
                 {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<string>("GroupId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -85,6 +107,8 @@ namespace BlazorSocial.Migrations.ContentDb
                     b.Property<string>("PostId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("GroupId");
 
@@ -97,6 +121,9 @@ namespace BlazorSocial.Migrations.ContentDb
                 {
                     b.Property<string>("PostId")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("AnonViewCount")
+                        .HasColumnType("int");
 
                     b.Property<int?>("Downvotes")
                         .HasColumnType("int");
@@ -156,20 +183,18 @@ namespace BlazorSocial.Migrations.ContentDb
             modelBuilder.Entity("BlazorSocial.Data.Entities.View", b =>
                 {
                     b.Property<string>("PostId")
-                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("TimesViewed")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<DateTime>("ViewDate")
                         .HasColumnType("datetime2");
 
-                    b.HasIndex("PostId");
+                    b.HasKey("PostId", "UserId");
 
                     b.HasIndex("UserId");
 
@@ -178,28 +203,37 @@ namespace BlazorSocial.Migrations.ContentDb
 
             modelBuilder.Entity("BlazorSocial.Data.Entities.Vote", b =>
                 {
+                    b.Property<string>("PostId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsUpvote")
                         .HasColumnType("bit");
 
-                    b.Property<string>("PostId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<DateTime?>("VoteDate")
                         .HasColumnType("datetime2");
 
-                    b.HasIndex("PostId");
+                    b.HasKey("PostId", "UserId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("Votes");
+                });
+
+            modelBuilder.Entity("BlazorSocial.Data.Entities.AnonView", b =>
+                {
+                    b.HasOne("BlazorSocial.Data.Entities.Post", "Post")
+                        .WithMany()
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Post");
                 });
 
             modelBuilder.Entity("BlazorSocial.Data.Entities.Post", b =>
