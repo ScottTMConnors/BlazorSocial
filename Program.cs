@@ -4,7 +4,7 @@ using BlazorSocial.Data;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using BlazorSocial.Services;
+//using BlazorSocial.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +17,7 @@ builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 //Service that handles metadata
-builder.Services.AddSingleton<MetaService>();
+//builder.Services.AddSingleton<MetaService>();
 
 builder.Services.AddAuthentication(options => {
     options.DefaultScheme = IdentityConstants.ApplicationScheme;
@@ -56,7 +56,7 @@ if (app.Environment.IsDevelopment()) {
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-var myService = app.Services.GetRequiredService<MetaService>();
+//var myService = app.Services.GetRequiredService<MetaService>();
 
 app.UseHttpsRedirection();
 
