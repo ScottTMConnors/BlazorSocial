@@ -65,6 +65,15 @@
         }
 
         //Get the post object associated with this id
+        GetPost();
+
+        if (_currentPost == null) {
+            NavigationManager.NavigateTo("/ViewPosts");
+        }
+
+    }
+
+    private void GetPost(){
         _currentPost = DbContext.Posts.Where(post => post.Id == Id).Select(post => new ViewPostObject {
             Id = post.Id,
             Title = post.Title,
@@ -75,11 +84,10 @@
             AuthorName = "",
             PostMetadata = post.PostMetadata
         }).FirstOrDefault();
+    }
 
-        if (_currentPost == null) {
-            NavigationManager.NavigateTo("/ViewPosts");
-        }
-
+    private void GetPostMetaData() {
+        _currentPost.PostMetadata = DbContext.PostMetadatas.Where(p => p.PostId == Id).FirstOrDefault();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender) {
@@ -114,6 +122,7 @@
                 }
 
                 voteObject = DbContext.Votes.Where(vote => (vote.UserId == userId) && (vote.PostId == _currentPost.Id)).FirstOrDefault() ?? new Vote { UserId = userId, PostId = _currentPost.Id};
+                Debug.WriteLine("niggas");
             } else {
 
                 string ipAddress = HttpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
@@ -172,6 +181,11 @@
     }
 
     private void UpdateVote(bool voteType) {
+
+
+        // Get the latest metadata
+        GetPostMetaData();
+
         if (voteObject.IsUpvote == voteType && voteObject.IsActive) {
             voteObject.IsActive = false;
             if (voteType) {
@@ -202,7 +216,8 @@
             voteObject.IsUpvote = voteType;
         }
         // Implement your logic here
-        DbContext.Update(voteObject);
+
+        _ = DbContext.Votes.Any(v => v.PostId == _currentPost.Id && v.UserId == userId) ? DbContext.Votes.Update(voteObject) : DbContext.Votes.Add(voteObject);
         DbContext.SaveChangesAsync();
 
         Debug.WriteLine($"User has {voteType}d.");

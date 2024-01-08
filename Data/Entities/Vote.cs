@@ -9,10 +9,10 @@ namespace BlazorSocial.Data.Entities {
         public string PostId { get; set; }
         [ForeignKey("SocialUser")]
         public string UserId { get; set; }
-        public bool IsUpvote { get; set; } = false;
+        public bool IsUpvote { get; set; }
         public DateTime? VoteDate { get; set; }
         public Post? Post { get; set; }
         public SocialUser? User { get; set; }
-        public bool IsActive { get; set; } = false;
+        public bool IsActive { get; set; }
     }
 }

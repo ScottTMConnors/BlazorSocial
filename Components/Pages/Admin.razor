@@ -114,18 +114,19 @@
 
 
         Debug.WriteLine("Inserting into db");
-        await dbContext.BulkInsertAsync(UserList);
-        await dbContext.BulkInsertAsync(PostList);
-        await dbContext.BulkInsertAsync(PostMetaList);
-        await dbContext.BulkInsertAsync(ViewList);
-        await dbContext.BulkInsertAsync(VoteList);
+        dbContext.BulkInsert(UserList);
+        dbContext.BulkInsert(PostList);
+        dbContext.BulkInsert(PostMetaList);
+        dbContext.BulkInsert(ViewList);
+        dbContext.BulkInsert(VoteList);
+        dbContext.Database.ExecuteSqlRaw("EXEC UpdateMetadata;");
         // DbContext.Posts.AddRange(GeneratedPosts);
         // await DbContext.SaveChangesAsync();
         message = $"{numberOfPosts} Random Posts Successful";
         Debug.WriteLine($"{numberOfPosts} Random Posts Successful");
         PostCount = dbContext.Posts.Count();
         StateHasChanged();
-        dbContext.DisposeAsync();
+        dbContext.Dispose();
         PostList.Clear();
         UserList.Clear();
         GC.Collect();
@@ -170,7 +171,7 @@
             string userId = UserList[random.Next(UserList.Count)].UserId;
             string postId = Guid.NewGuid().ToString("N");
 
-            int range = ((endDate - startDate).Days + 1);
+            int range = ((endDate - startDate).Days);
             DateTime randomDate = startDate.AddDays(random.Next(range)).AddHours(random.Next(DateTime.Now.Hour)).AddMinutes(random.Next(DateTime.Now.Minute)).AddSeconds(random.Next(DateTime.Now.Second));
 
 
@@ -234,7 +235,7 @@
             // Create a random view date
 
             DateTime startDate = post.PostDate ?? DateTime.Now;
-            int range = ((endDate - startDate).Days + 1);
+            int range = ((endDate - startDate).Days);
             DateTime randomDate = startDate.AddDays(random.Next(range)).AddHours(random.Next(DateTime.Now.Hour)).AddMinutes(random.Next(DateTime.Now.Minute)).AddSeconds(random.Next(DateTime.Now.Second));
 
 
@@ -507,14 +508,12 @@
 
         using var dbContext = dbContextFactory.CreateDbContext();
 
-        string sqlCommand = $"DELETE FROM Posts;DELETE FROM Groups;DELETE FROM PostGroups;DELETE FROM PostMetadatas;DELETE FROM SocialUsers;DELETE FROM Views;DELETE FROM Votes;";
-
         // Execute the raw SQL command
-        await dbContext.Database.ExecuteSqlRawAsync(sqlCommand);
+        dbContext.Database.ExecuteSqlRaw("EXEC Deletedata;");
         message = "Posts Successfully deleted";
         PostCount = dbContext.Posts.Count();
         StateHasChanged();
-        dbContext.DisposeAsync();
+        dbContext.Dispose();
     }
  
 }
