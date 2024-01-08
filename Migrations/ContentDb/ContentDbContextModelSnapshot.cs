@@ -41,6 +41,35 @@ namespace BlazorSocial.Migrations.ContentDb
                     b.ToTable("AnonViews");
                 });
 
+            modelBuilder.Entity("BlazorSocial.Data.Entities.Comment", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AuthorID")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("PostDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PostId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorID");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("Comments");
+                });
+
             modelBuilder.Entity("BlazorSocial.Data.Entities.Group", b =>
                 {
                     b.Property<string>("Id")
@@ -51,11 +80,13 @@ namespace BlazorSocial.Migrations.ContentDb
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("GroupName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
@@ -68,10 +99,11 @@ namespace BlazorSocial.Migrations.ContentDb
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("AuthorID")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Content")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(3999)
+                        .HasColumnType("nvarchar(3999)");
 
                     b.Property<DateTime?>("PostDate")
                         .HasColumnType("datetime2");
@@ -80,9 +112,12 @@ namespace BlazorSocial.Migrations.ContentDb
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
+                        .HasMaxLength(9999)
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AuthorID");
 
                     b.HasIndex("PostTypeID");
 
@@ -170,7 +205,8 @@ namespace BlazorSocial.Migrations.ContentDb
 
                     b.Property<string>("UserName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.HasKey("UserId");
 
@@ -233,11 +269,34 @@ namespace BlazorSocial.Migrations.ContentDb
                     b.Navigation("Post");
                 });
 
+            modelBuilder.Entity("BlazorSocial.Data.Entities.Comment", b =>
+                {
+                    b.HasOne("BlazorSocial.Data.Entities.SocialUser", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorID");
+
+                    b.HasOne("BlazorSocial.Data.Entities.Post", "Post")
+                        .WithMany()
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Post");
+                });
+
             modelBuilder.Entity("BlazorSocial.Data.Entities.Post", b =>
                 {
+                    b.HasOne("BlazorSocial.Data.Entities.SocialUser", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorID");
+
                     b.HasOne("BlazorSocial.Data.Entities.PostType", "PostType")
                         .WithMany()
                         .HasForeignKey("PostTypeID");
+
+                    b.Navigation("Author");
 
                     b.Navigation("PostType");
                 });

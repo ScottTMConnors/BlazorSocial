@@ -16,8 +16,8 @@ namespace BlazorSocial.Migrations.ContentDb
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    GroupName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    GroupName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -43,7 +43,7 @@ namespace BlazorSocial.Migrations.ContentDb
                 columns: table => new
                 {
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
@@ -56,10 +56,10 @@ namespace BlazorSocial.Migrations.ContentDb
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Title = table.Column<string>(type: "nvarchar(max)", maxLength: 9999, nullable: true),
+                    Content = table.Column<string>(type: "nvarchar(3999)", maxLength: 3999, nullable: true),
                     PostTypeID = table.Column<int>(type: "int", nullable: true),
-                    AuthorID = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AuthorID = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     PostDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -70,6 +70,11 @@ namespace BlazorSocial.Migrations.ContentDb
                         column: x => x.PostTypeID,
                         principalTable: "PostTypes",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Posts_SocialUsers_AuthorID",
+                        column: x => x.AuthorID,
+                        principalTable: "SocialUsers",
+                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateTable(
@@ -90,6 +95,32 @@ namespace BlazorSocial.Migrations.ContentDb
                         principalTable: "Posts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Comments",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PostId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    AuthorID = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    Content = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    PostDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Comments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Comments_Posts_PostId",
+                        column: x => x.PostId,
+                        principalTable: "Posts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Comments_SocialUsers_AuthorID",
+                        column: x => x.AuthorID,
+                        principalTable: "SocialUsers",
+                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateTable(
@@ -195,6 +226,16 @@ namespace BlazorSocial.Migrations.ContentDb
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Comments_AuthorID",
+                table: "Comments",
+                column: "AuthorID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comments_PostId",
+                table: "Comments",
+                column: "PostId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PostGroups_GroupId",
                 table: "PostGroups",
                 column: "GroupId");
@@ -203,6 +244,11 @@ namespace BlazorSocial.Migrations.ContentDb
                 name: "IX_PostGroups_PostId",
                 table: "PostGroups",
                 column: "PostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Posts_AuthorID",
+                table: "Posts",
+                column: "AuthorID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Posts_PostTypeID",
@@ -227,6 +273,9 @@ namespace BlazorSocial.Migrations.ContentDb
                 name: "AnonViews");
 
             migrationBuilder.DropTable(
+                name: "Comments");
+
+            migrationBuilder.DropTable(
                 name: "PostGroups");
 
             migrationBuilder.DropTable(
@@ -245,10 +294,10 @@ namespace BlazorSocial.Migrations.ContentDb
                 name: "Posts");
 
             migrationBuilder.DropTable(
-                name: "SocialUsers");
+                name: "PostTypes");
 
             migrationBuilder.DropTable(
-                name: "PostTypes");
+                name: "SocialUsers");
         }
     }
 }

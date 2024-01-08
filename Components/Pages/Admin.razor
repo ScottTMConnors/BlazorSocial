@@ -41,13 +41,10 @@
 <input type="number" @bind="numberOfUsers" />
 <br />
 <p>Specify # of posts</p>
-<input type="number" @bind="numberOfPosts" />
+<input type="number" @bind="numberOfPosts" />/>
 <br />
-<p>Max phrases ({subject} {verb} {objectPhrase})</p>
-<p>Title:</p>
-<input type="number" @bind="maxTitle" />
-<p>Content:</p>
-<input type="number" @bind="maxContent" />
+<p>Specify # of interaction</p>
+<input type="number" @bind="maxInteractions" />/>
 <br />
 <br />
 <button class="btn btn-primary" @onclick="GenerateData">Generate</button>
@@ -61,8 +58,10 @@
     private string message = "";
 
     private int numberOfPosts = 100;
-    private int maxTitle = 1;
-    private int maxContent = 100;
+    private int maxTitle = 100;
+    private int maxContent = 3999;
+    private int maxComment = 999;
+    private int maxInteractions = 999;
 
     private int numberOfUsers = 100;
 
@@ -80,6 +79,8 @@
     private ConcurrentBag<View> ViewList = new ConcurrentBag<View>();
 
     private ConcurrentBag<Vote> VoteList = new ConcurrentBag<Vote>();
+
+    private ConcurrentBag<Comment> CommentList = new ConcurrentBag<Comment>();
 
     private class interactionObject {
         public IEnumerable<View> Views { get; set; }
@@ -119,6 +120,7 @@
         dbContext.BulkInsert(PostMetaList);
         dbContext.BulkInsert(ViewList);
         dbContext.BulkInsert(VoteList);
+        dbContext.BulkInsert(CommentList);
         dbContext.Database.ExecuteSqlRaw("EXEC UpdateMetadata;");
         // DbContext.Posts.AddRange(GeneratedPosts);
         // await DbContext.SaveChangesAsync();
@@ -165,8 +167,8 @@
             // Generate a random title and content
             Random random = new Random();
 
-            var randomTitletask = GenerateRandomSentence(random, 1, maxTitle); // Assuming title length between 10 and 20 characters
-            var randomContenttask = GenerateRandomSentence(random, 3, maxContent); // Content length between 5 and 100 characters
+            var randomTitletask = GenerateRandomContent(maxTitle); // Assuming title length between 10 and 20 characters
+            var randomContenttask = GenerateRandomContent(maxContent); // Content length between 5 and 100 characters
             DateTime startDate = new DateTime(2020, 1, 1);
             string userId = UserList[random.Next(UserList.Count)].UserId;
             string postId = Guid.NewGuid().ToString("N");
@@ -188,10 +190,17 @@
 
             //Build Title
             string randomTitle = randomTitletask.Result;
+            if (randomTitle.Length > 99) {
+                randomTitle = randomTitle.Substring(99);
+            }
             newPost.Title = randomTitle;
 
             //Content
             string randomContent = randomContenttask.Result;
+
+            if (randomContent.Length > 3998) {
+                randomContent = randomContent.Substring(3998);
+            }
             newPost.Content = randomContent;
 
 
@@ -217,9 +226,14 @@
         ICollection<string> UserIdsInteracted = new List<string>();
         // Get a random number of users to interact with this post
         Random random = new Random();
-        int numofInteractions = random.Next(1, (numberOfUsers / random.Next(2,5)));
-        // For ever number of users, pick a user that is not the post user and hasnt interacted with this post yet (Will probably be resource intensive)
         int userCount = UserList.Count();
+        int numSeed = maxInteractions;
+        if (numSeed > userCount) {
+            numSeed = userCount;
+        }
+        int numofInteractions = random.Next(1, numSeed);
+        // For ever number of users, pick a user that is not the post user and hasnt interacted with this post yet (Will probably be resource intensive)
+        
         UserIdsInteracted.Add(post.AuthorID);
         int listCount = 1; //Start at 1 to account for the post author
         for (int i = 0; i <= numofInteractions; i++) {
@@ -273,234 +287,60 @@
 
 
             // TODO, add comments
+            // Randomly determine if a comment will be made
+
+            if (random.Next() > (Int32.MaxValue / 2)) {
+
+                randomDate = startDate.AddDays(random.Next(range)).AddHours(random.Next(DateTime.Now.Hour)).AddMinutes(random.Next(DateTime.Now.Minute)).AddSeconds(random.Next(DateTime.Now.Second));
+
+                string commentContent = GenerateRandomContent(maxComment).Result;
+                if (commentContent.Length > 500) {
+                    commentContent = commentContent.Substring(500);
+                }
+
+                string commentId = Guid.NewGuid().ToString("N");
+                Comment GeneratedComment = new Comment {
+                    Id = commentId,
+                    PostId = post.Id,
+                    AuthorID = userId,
+                    PostDate = randomDate,
+                    Content = commentContent
+                };
+                CommentList.Add(GeneratedComment);
+
+            }
+
+
+
         }
     }
 
-    private async Task<string> GenerateRandomSentence(Random random, int minPhrases, int maxLength) {
-        string[] connectors = {
-            "and", "but", "or", "so", "because",
-            "although", "however", "therefore", "meanwhile", "consequently",
-            "furthermore", "moreover", "thus", "nonetheless", "besides",
-            "otherwise", "then", "accordingly", "hence", "instead",
-            "whereas", "despite", "as long as", "unless", "even though"
-    };
+    private async Task<string> GenerateRandomContent(int maxChars) {
+        Random random = new Random();
+        string[] words = { "lorem", "ipsum", "dolor", "sit", "amet", "consectetur", "adipiscing", "elit", "sed", "do", "eiusmod", "tempor", "incididunt" };
+        StringBuilder post = new StringBuilder();
+        int currentLength = 0;
 
-        string[] subjects = {
-            "alice", "the cat", "our team", "the weather", "this recipe",
-            "john", "the dog", "the company", "the book", "the movie",
-            "jim", "the teacher", "the student", "the car", "the game",
-            "the musician", "the artist", "the city", "the computer", "the phone",
-            "the chef", "the gardener", "the runner", "the dancer", "the writer",
-            "the bird", "the fish", "the planet", "the sun", "the moon",
-            "the athlete", "the scientist", "the doctor", "the engineer", "the pilot",
-            "the president", "the king", "the queen", "the prince", "the princess",
-            "the actor", "the director", "the photographer", "the baby", "the child",
-            "the adult", "the teenager", "the elder", "the robot", "the alien",
-            "the ghost", "the monster", "the dragon", "the knight", "the wizard",
-            "the chef", "the baker", "the farmer", "the sailor", "the fisherman",
-            "the teacher", "the policeman", "the firefighter", "the nurse", "the dentist",
-            "the lawyer", "the judge", "the librarian", "the journalist", "the editor",
-            "the driver", "the pilot", "the astronaut", "the scientist", "the archaeologist",
-            "the explorer", "the trader", "the banker", "the clerk", "the manager",
-            "the ceo", "the intern", "the volunteer", "the activist", "the artist",
-            "the singer", "the guitarist", "the pianist", "the drummer", "the actor",
-            "the magician", "the comedian", "the speaker", "the author", "the poet"
-    };
-
-        string[] objects = {
-            "Bob", "over the moon", "day by day", "in summer", "delicious",
-            "a mystery", "a story", "a song", "a movie", "a game",
-            "a puzzle", "a painting", "a sculpture", "a photograph", "a garden",
-            "a forest", "a mountain", "a river", "a sea", "an ocean",
-            "a beach", "a city", "a village", "a country", "a planet",
-            "a star", "a galaxy", "the universe", "history", "the future",
-            "a dream", "a nightmare", "a legend", "a myth", "a fairy tale",
-            "a poem", "a novel", "a play", "a dance", "a melody",
-            "a rhythm", "a harmony", "a tune", "a beat", "a chord",
-            "a joke", "a laugh", "a smile", "a tear", "a look",
-            "a glance", "a wink", "a nod", "a gesture", "a step",
-            "a leap", "a jump", "a run", "a walk", "a hike",
-            "a trip", "a journey", "an adventure", "a quest", "a challenge",
-            "a test", "an exam", "a lesson", "a lecture", "a seminar",
-            "a workshop", "a conference", "a meeting", "a conversation", "a discussion",
-            "a debate", "an argument", "a fight", "a battle", "a war",
-            "peace", "a treaty", "a deal", "a contract", "an agreement",
-            "a promise", "a vow", "a pledge", "a oath", "a commitment"
-    };
-
-
-        string[] phraseTemplates = new string[] {
-            "{0} {1} {2}",
-            "{0} {1} {2} and then {1} {2}",
-            "{0} {1} {2} but {3} {4} {5}",
-            "{0} {1} {2} while {3} {4} {5}",
-            "{0} {1} {2} because {3} {4} {5}",
-            "{0} {1} {2}, {6} {3} {4} {5}",
-            "{0} {1} {2}, {6} {1} {5}",
-            "{0} {1} {2}, {6} {4} {5}",
-            "{0} {1} {2}, {6} the latter {4} {5}",
-            "{0} {1} {2}, {6} suddenly {1} {2}",
-            "{0} {1} {2}, {6} eventually {4} {5}",
-            "{0} {1} {2} as if {3} {4} {5}",
-            "{0} {1} {2}, {6} then {3} {4} {5}",
-            "{0} {1} {2}, {6} hence {3} {4} {5}",
-            "{0} {1} {2}, {6} thus {1} {5}",
-            "{0} {1} {2}, {6} meanwhile {4} {2}",
-            "{0} {1} {2}, {6} moreover {3} {4} {5}",
-            "{0} {1} {2}, {6} furthermore {1} {5}",
-            "{0} {1} {2}, {6} however {3} {4} {5}",
-            "{0} {1} {2}, {6} alternatively {4} {2}",
-            "{0} {1} {2}, {6} conversely {1} {5}",
-            "{0} {1} {2}, {6} on the other hand {3} {4} {5}",
-            "{0} {1} {2} despite {3} {4} {5}",
-            "{0} {1} {2} yet {3} {4} {5}",
-            "{0} {1} {2} albeit {3} {4} {5}",
-            "{0} {1} {2}, {6} notwithstanding {3} {4} {5}",
-            "{0} {1} {2}, {6} whereas {1} {5}",
-            "{0} {1} {2}, {6} though {4} {2}",
-            "{0} {1} {2}, {6} even though {3} {4} {5}",
-            "{0} {1} {2}, {6} even if {1} {5}",
-            "{0} {1} {2} unless {3} {4} {5}",
-            "{0} {1} {2}, {6} provided that {4} {2}",
-            "{0} {1} {2}, {6} as long as {3} {4} {5}",
-            "{0} {1} {2}, {6} so long as {1} {5}",
-            "{0} {1} {2} in case {3} {4} {5}",
-            "{0} {1} {2}, {6} as though {4} {2}",
-            "{0} {1} {2}, {6} as much as {3} {4} {5}",
-            "{0} {1} {2}, {6} as soon as {1} {5}",
-            "{0} {1} {2}, {6} insofar as {3} {4} {5}",
-            "{0} {1} {2}, {6} inasmuch as {4} {2}",
-            "{0} {1} {2}, {6} just as {3} {4} {5}",
-            "{0} {1} {2}, {6} just as soon as {1} {5}",
-            "{0} {1} {2}, {6} just because {3} {4} {5}",
-            "{0} {1} {2}, {6} since {4} {2}",
-            "{0} {1} {2}, {6} now that {3} {4} {5}",
-            "{0} {1} {2}, {6} once {1} {5}",
-            "{0} {1} {2}, {6} whenever {3} {4} {5}",
-            "{0} {1} {2}, {6} wherever {4} {2}",
-            "{0} {1} {2}, {6} while {3} {4} {5}",
-            "{0} {1} {2}, {6} till {1} {5}",
-            "{0} {1} {2}, {6} until {3} {4} {5}",
-            "{0} {1} {2}, {6} after {4} {2}",
-            "{0} {1} {2}, {6} before {3} {4} {5}",
-            "{0} {1} {2}, {6} by the time {1} {5}",
-            "{0} {1} {2}, {6} by then {3} {4} {5}",
-            "{0} {1} {2}, {6} by when {4} {2}",
-            "{0} {1} {2}, {6} as {3} {4} {5}",
-            "{0} {1} {2}, {6} like {1} {5}",
-            "{0} {1} {2}, {6} unlike {3} {4} {5}",
-            "{0} {1} {2}, {6} similar to {4} {2}",
-            "{0} {1} {2}, {6} as if {3} {4} {5}",
-            "{0} {1} {2}, {6} as though {1} {5}",
-            "{0} {1} {2}, {6} in the way that {3} {4} {5}",
-            "{0} {1} {2}, {6} in that {4} {2}",
-            "{0} {1} {2}, {6} so that {3} {4} {5}",
-            "{0} {1} {2}, {6} in order that {1} {5}",
-            "{0} {1} {2}, {6} so as to {3} {4} {5}",
-            "{0} {1} {2}, {6} so as not to {4} {2}",
-            "{0} {1} {2}, {6} lest {3} {4} {5}",
-            "{0} {1} {2}, {6} for fear that {1} {5}",
-            "{0} {1} {2}, {6} in case {3} {4} {5}",
-            "{0} {1} {2}, {6} in the event that {4} {2}",
-            "{0} {1} {2}, {6} to the extent that {3} {4} {5}",
-            "{0} {1} {2}, {6} to the degree that {1} {5}",
-            "{0} {1} {2}, {6} such that {3} {4} {5}",
-            "{0} {1} {2}, {6} in that {4} {2}",
-            "{0} {1} {2}, {6} as far as {3} {4} {5}",
-            "{0} {1} {2}, {6} as much as {1} {5}",
-            "{0} {1} {2}, {6} considering that {3} {4} {5}",
-            "{0} {1} {2}, {6} given that {4} {2}",
-            "{0} {1} {2}, {6} seeing that {3} {4} {5}",
-            "{0} {1} {2}, {6} seeing as {1} {5}",
-            "{0} {1} {2}, {6} owing to {3} {4} {5}",
-            "{0} {1} {2}, {6} due to {4} {2}",
-            "{0} {1} {2}, {6} because of {3} {4} {5}",
-            "{0} {1} {2}, {6} on account of {1} {5}",
-            "{0} {1} {2}, {6} by reason of {3} {4} {5}"
-    };
-
-
-
-        string[] pronouns = { "It", "They" };
-
-
-
-        int numberOfPhrases = random.Next(minPhrases, maxLength + 1);
-        ConcurrentBag<string> sentence = new ConcurrentBag<string>();
-
-
-        Parallel.For(0, numberOfPhrases, i => {
-            //for (int i = 0; i < numberOfPhrases; i++) {
-
-
-            int subjectIndex = random.Next(subjects.Length);
-            string currentSubject = subjects[subjectIndex];
-
-            string currentSubject2 = subjects[random.Next(subjects.Length)];
-
-            string currentObject = subjects[random.Next(objects.Length)];
-            string currentObject2 = subjects[random.Next(objects.Length)];
-
-            int subjectGroups = random.Next(1, 3);
-            StringBuilder subjectString = new StringBuilder();
-
-            for (int b = 0; b < subjectGroups; b++) {
-                if (b > 0) {
-                    string theconnector = connectors[random.Next(connectors.Length)];
-                    sentence.Append($" {theconnector} ");
-                    // Decide whether to use the same subject or a pronoun
-                    if (i > 0 && random.NextDouble() < 0.5) { // 50% chance to switch to a pronoun
-                        currentSubject = pronouns[random.Next(pronouns.Length)];
-                    }
-
-                    if (i > 0 && random.NextDouble() < 0.5) { // 50% chance to switch objects
-                        currentObject = subjects[random.Next(objects.Length)];
-                    }
-
-                }
-
-                string[] verbs = {
-                    "loves", "jumps", "is improving", "is unpredictable", "tastes",
-                    "creates", "destroys", "builds", "learns", "teaches",
-                    "drives", "flies", "travels", "runs", "walks",
-                    "reads", "writes", "paints", "draws", "sings",
-                    "plays", "listens", "speaks", "thinks", "believes",
-                    "hopes", "fears", "dreams", "dances", "laughs",
-                    "cries", "smiles", "frowns", "agrees", "disagrees",
-                    "wins", "loses", "competes", "cooperates", "leads",
-                    "follows", "invents", "discovers", "explores", "maps",
-                    "calculates", "measures", "cuts", "cooks", "bakes",
-                    "eats", "drinks", "sleeps", "wakes", "rests",
-                    "works", "relaxes", "exercises", "shops", "buys",
-                    "sells", "trades", "invests", "saves", "spends",
-                    "borrows", "lends", "offers", "receives", "gives",
-                    "sends", "receives", "uploads", "downloads", "streams",
-                    "surfs", "searches", "finds", "loses", "recovers",
-                    "opens", "closes", "starts", "stops", "continues",
-                    "pauses", "resumes", "joins", "leaves", "enters",
-                    "exits", "rises", "falls", "grows", "shrinks",
-                    "changes", "remains", "stays", "moves", "stills"
-                };
-
-                string verb = verbs[random.Next(verbs.Length)];
-                string verb2 = verbs[random.Next(verbs.Length)];
-                string connector = connectors[random.Next(connectors.Length)];
-
-                string phraseTemplate = phraseTemplates[random.Next(phraseTemplates.Length)];
-
-                string phrase = string.Format(phraseTemplate, currentSubject, verb, currentObject, currentSubject2, verb2, currentObject2, connector);
-
-
-
-                phrase = $"{char.ToUpper(phrase[0])}{phrase.ToString().Substring(1)}. ";
-
-                subjectString.Append(phrase);
+        while (currentLength <= maxChars) {
+            // Generate a pseudo-sentence
+            int sentenceLength = random.Next(3, 10); // Random length of the sentence
+            for (int i = 0; i < sentenceLength; i++) {
+                post.Append(words[random.Next(words.Length)] + " ");
             }
 
-            sentence.Add(subjectString.ToString());
-        });
+            // Apply random formatting
+            switch (random.Next(3)) {
+                case 0: post.Insert(currentLength, "<b>"); post.Append("</b> "); break;
+                case 1: post.Insert(currentLength, "<i>"); post.Append("</i> "); break;
+                case 2: post.Append("<br>"); break;
+            }
 
-        return string.Join("", sentence);
+            currentLength = post.Length;
+        }
+
+        // Ensure the post is not longer than maxChars
+        return post.ToString().Substring(0, Math.Min(post.Length, maxChars));
+
     }
 
 

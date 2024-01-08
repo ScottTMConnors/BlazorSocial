@@ -12,6 +12,7 @@ namespace BlazorSocial.Data {
 
 
         public DbSet<Post> Posts { get; set; }
+        public DbSet<Comment> Comments { get; set; }
         public DbSet<PostType> PostTypes { get; set; }
         public DbSet<PostGroup> PostGroups { get; set; }
         public DbSet<Vote> Votes { get; set; }
