@@ -44,28 +44,20 @@
 </Virtualize>
 
 @code {
-    private string privateString = "this string is private";
+    //private string privateString = "this string is private";
 
 
-    private List<ViewPostObject> postsCache = new List<ViewPostObject>();
+    //private List<ViewPostObject> postsCache = new List<ViewPostObject>();
 
     private async ValueTask<ItemsProviderResult<ViewPostObject>> LoadPosts(ItemsProviderRequest request) {
         var requiredPosts = new List<ViewPostObject>();
 
-        // Check cache first
-        for (int i = request.StartIndex; i < request.StartIndex + request.Count; i++) {
-            if (i < postsCache.Count) {
-                requiredPosts.Add(postsCache[i]);
-            } else {
-                break; // If not all required posts are in the cache, break and load from DB
-            }
-        }
+        using var dbContext = dbContextFactory.CreateDbContext();
 
-        if (requiredPosts.Count < request.Count) {
-            using var dbContext = dbContextFactory.CreateDbContext();
-            var newPosts = await dbContext.Posts
-                .OrderByDescending(post => post.PostDate)
-                .Select(post => new ViewPostObject {
+        // Load the requested posts from the database
+        var newPosts = await dbContext.Posts
+            .OrderByDescending(post => post.PostDate)
+            .Select(post => new ViewPostObject {
                     Id = post.Id,
                     Title = post.Title,
                     Content = post.Content.Substring(0, 1000),
@@ -75,16 +67,15 @@
                     AuthorName = "",
                     PostMetadata = post.PostMetadata
                 })
-                .Skip(postsCache.Count)
-                .Take(request.Count - requiredPosts.Count)
-                .ToListAsync();
+            .Skip(request.StartIndex)
+            .Take(request.Count)
+            .ToListAsync();
 
-            postsCache.AddRange(newPosts);
-            requiredPosts.AddRange(newPosts);
-        }
+        requiredPosts.AddRange(newPosts);
 
-        // Calculate a dynamic total item count
-        int dynamicTotalCount = postsCache.Count + (requiredPosts.Any() ? 10 : 0);
+        // Dynamically adjust the total item count
+        // We add a buffer (e.g., 10) to the total count to allow for dynamic loading
+        int dynamicTotalCount = request.StartIndex + requiredPosts.Count + 10;
 
         return new ItemsProviderResult<ViewPostObject>(requiredPosts, dynamicTotalCount);
     }

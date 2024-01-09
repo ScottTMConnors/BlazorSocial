@@ -190,17 +190,11 @@
 
             //Build Title
             string randomTitle = randomTitletask.Result;
-            if (randomTitle.Length > 99) {
-                randomTitle = randomTitle.Substring(99);
-            }
             newPost.Title = randomTitle;
 
             //Content
             string randomContent = randomContenttask.Result;
 
-            if (randomContent.Length > 3998) {
-                randomContent = randomContent.Substring(3998);
-            }
             newPost.Content = randomContent;
 
 
@@ -240,7 +234,7 @@
             // Pick a random user in the userlist
             string userId = UserList
                 .Where(u => !UserIdsInteracted.Any(u2 => u2 == u.UserId))
-                .ElementAt(random.Next((userCount - listCount) - 1))
+                .ElementAt(random.Next((userCount - listCount)))
                 .UserId;
             UserIdsInteracted.Add(userId);
             listCount++;
@@ -294,9 +288,6 @@
                 randomDate = startDate.AddDays(random.Next(range)).AddHours(random.Next(DateTime.Now.Hour)).AddMinutes(random.Next(DateTime.Now.Minute)).AddSeconds(random.Next(DateTime.Now.Second));
 
                 string commentContent = GenerateRandomContent(maxComment).Result;
-                if (commentContent.Length > 500) {
-                    commentContent = commentContent.Substring(500);
-                }
 
                 string commentId = Guid.NewGuid().ToString("N");
                 Comment GeneratedComment = new Comment {
