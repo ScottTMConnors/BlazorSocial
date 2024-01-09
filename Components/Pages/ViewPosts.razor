@@ -44,18 +44,13 @@
 </Virtualize>
 
 @code {
-    //private string privateString = "this string is private";
-
-
-    //private List<ViewPostObject> postsCache = new List<ViewPostObject>();
 
     private async ValueTask<ItemsProviderResult<ViewPostObject>> LoadPosts(ItemsProviderRequest request) {
-        var requiredPosts = new List<ViewPostObject>();
 
         using var dbContext = dbContextFactory.CreateDbContext();
 
         // Load the requested posts from the database
-        var newPosts = await dbContext.Posts
+        IEnumerable<ViewPostObject> newPosts = await dbContext.Posts
             .OrderByDescending(post => post.PostDate)
             .Select(post => new ViewPostObject {
                     Id = post.Id,
@@ -71,13 +66,9 @@
             .Take(request.Count)
             .ToListAsync();
 
-        requiredPosts.AddRange(newPosts);
+        int dynamicTotalCount = request.StartIndex + newPosts.Count() + 10;
 
-        // Dynamically adjust the total item count
-        // We add a buffer (e.g., 10) to the total count to allow for dynamic loading
-        int dynamicTotalCount = request.StartIndex + requiredPosts.Count + 10;
-
-        return new ItemsProviderResult<ViewPostObject>(requiredPosts, dynamicTotalCount);
+        return new ItemsProviderResult<ViewPostObject>(newPosts, dynamicTotalCount);
     }
 
     public static string ConvertDateToString(DateTime? date) {

@@ -320,11 +320,11 @@
             }
 
             // Apply random formatting
-            switch (random.Next(3)) {
-                case 0: post.Insert(currentLength, "<b>"); post.Append("</b> "); break;
-                case 1: post.Insert(currentLength, "<i>"); post.Append("</i> "); break;
-                case 2: post.Append("<br>"); break;
-            }
+            // switch (random.Next(3)) {
+            //     case 0: post.Insert(currentLength, "<b>"); post.Append("</b> "); break;
+            //     case 1: post.Insert(currentLength, "<i>"); post.Append("</i> "); break;
+            //     case 2: post.Append("<br />"); break;
+            // }
 
             currentLength = post.Length;
         }
