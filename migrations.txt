@@ -1,0 +1,5 @@
+dotnet ef migrations add Socialmigrations --context ContentDbContext
+dotnet ef database update --context ContentDbContext
+
+dotnet ef migrations add UserMigrations --context ApplicationDbContext
+dotnet ef database update --context ApplicationDbContext
