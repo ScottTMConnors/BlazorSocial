@@ -98,7 +98,12 @@
             .Take(request.Count)
             .ToListAsync();
 
-        int dynamicTotalCount = request.StartIndex + newComments.Count() + 10;
+        int dynamicTotalCount;
+        if (newComments.Count() < request.Count) {
+            dynamicTotalCount = request.StartIndex + newComments.Count();
+        } else {
+            dynamicTotalCount = request.StartIndex + newComments.Count() + 10; // buffer for more posts
+        }
 
         return new ItemsProviderResult<Comment>(newComments, dynamicTotalCount);
     }
