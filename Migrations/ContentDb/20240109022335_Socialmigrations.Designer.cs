@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazorSocial.Migrations.ContentDb
 {
     [DbContext(typeof(ContentDbContext))]
-    [Migration("20240108011919_Socialmigrations")]
+    [Migration("20240109022335_Socialmigrations")]
     partial class Socialmigrations
     {
         /// <inheritdoc />
@@ -115,8 +115,8 @@ namespace BlazorSocial.Migrations.ContentDb
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
-                        .HasMaxLength(9999)
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 

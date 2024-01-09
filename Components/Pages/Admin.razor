@@ -179,7 +179,8 @@
 
             Post newPost = new Post {
                 Id = postId,
-                PostDate = randomDate
+                PostDate = randomDate,
+                AuthorID = userId
             };
 
             var viewvoteTask = GenerateViewsandVotes(newPost);
@@ -234,7 +235,7 @@
             // Pick a random user in the userlist
             string userId = UserList
                 .Where(u => !UserIdsInteracted.Any(u2 => u2 == u.UserId))
-                .ElementAt(random.Next((userCount - listCount)))
+                .ElementAt(random.Next((userCount - listCount) - 1))
                 .UserId;
             UserIdsInteracted.Add(userId);
             listCount++;

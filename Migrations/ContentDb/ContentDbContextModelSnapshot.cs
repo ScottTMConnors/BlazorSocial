@@ -112,8 +112,8 @@ namespace BlazorSocial.Migrations.ContentDb
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
-                        .HasMaxLength(9999)
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 

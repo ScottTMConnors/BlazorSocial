@@ -56,7 +56,7 @@ namespace BlazorSocial.Migrations.ContentDb
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(max)", maxLength: 9999, nullable: true),
+                    Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     Content = table.Column<string>(type: "nvarchar(3999)", maxLength: 3999, nullable: true),
                     PostTypeID = table.Column<int>(type: "int", nullable: true),
                     AuthorID = table.Column<string>(type: "nvarchar(450)", nullable: true),

@@ -21,34 +21,36 @@
 @inject IDbContextFactory<ContentDbContext> dbContextFactory
 @inject SignInManager<ApplicationUser> SignInManager
 
+<div class="post-card">
+    <h1>@_currentPost.Title</h1>
+    <br/>
+    <p>@((MarkupString)_currentPost.Content)</p>
+    <br />
+    <p>@_currentPost.PostDate</p>
+    <br />
+    <p>Views: @_currentPost.PostMetadata.ViewCount</p>
+    <br />
+    <div>
+        @if (authenticated) {
+            <button style="outline: none !important;"  class="votebutton @(((voteObject.IsUpvote) && (voteObject.IsActive)) ? "text-warning" : "text-secondary")" @onclick="Upvote">
+                <i class="bi bi-arrow-up"></i>
+            </button>
 
-<h1>@_currentPost.Title</h1>
-<br/>
-<p>@((MarkupString)_currentPost.Content)</p>
-<br />
-<p>@_currentPost.PostDate</p>
-<br />
-<p>Views: @_currentPost.PostMetadata.ViewCount</p>
-<br />
-@if (authenticated) {
-    <button style="outline: none !important;"  class="votebutton @(((voteObject.IsUpvote) && (voteObject.IsActive)) ? "text-warning" : "text-secondary")" @onclick="Upvote">
-        <i class="bi bi-arrow-up"></i>
-    </button>
-
-    <button style="outline: none !important;" class="votebutton @((!(voteObject.IsUpvote) && (voteObject.IsActive)) ? "text-purple" : "text-secondary")" @onclick="Downvote">
-        <i class="bi bi-arrow-down"></i>
-    </button>
-}
-<p>Score: @_currentPost.PostMetadata.NetVotes | Upvotes: @_currentPost.PostMetadata.Upvotes | Downvotes: @_currentPost.PostMetadata.Downvotes </p>
-
+            <button style="outline: none !important;" class="votebutton @((!(voteObject.IsUpvote) && (voteObject.IsActive)) ? "text-purple" : "text-secondary")" @onclick="Downvote">
+                <i class="bi bi-arrow-down"></i>
+            </button>
+        }
+        <p>Score: @_currentPost.PostMetadata.NetVotes | Upvotes: @_currentPost.PostMetadata.Upvotes | Downvotes: @_currentPost.PostMetadata.Downvotes </p>
+    </div>
+</div>
 
 <br />
 
 <Virtualize Context="comment" ItemsProvider="@LoadComments" ItemSize="100" OverscanCount="1">
     <ItemContent>
-        <div>
-            <p>@comment.AuthorID</p>
-            <p>@comment.PostDate</p>
+        <div class="comment-card">
+            <p>@comment.Author.UserName</p>
+            <p>@ConvertDateToString(comment.PostDate)</p>
             <div class="">
             <p>@((MarkupString)comment.Content)</p>
             </div>
@@ -92,7 +94,14 @@
 
         // Load the requested posts from the database
         IEnumerable<Comment> newComments = await dbContext.Comments
+            .Include(comment => comment.Author)
             .Where(comment => comment.PostId == _currentPost.Id)
+            .Select(comment => new Comment {
+                Id = comment.Id,
+                Content = comment.Content,
+                PostDate = comment.PostDate,
+                Author = comment.Author
+            })
             .OrderByDescending(comment => comment.PostDate)
             .Skip(request.StartIndex)
             .Take(request.Count)
@@ -274,6 +283,32 @@
         padding: 10px;
         border: none;
         background: none;
+    }
+
+    .post-card {
+        border: 1px solid #d0d0d0;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        margin: auto;
+        margin-bottom: 20px;
+        padding: 15px;
+        border-radius: 10px;
+        background-color: white;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .comment-card {
+        border: 1px solid #d0d0d0;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        margin: auto;
+        margin-bottom: 20px;
+        padding: 15px;
+        border-radius: 10px;
+        background-color: white;
+
+/*         overflow: hidden; /* Hide content that overflows */ */
+        display: flex;
+        flex-direction: column;
     }
 
 </style>
