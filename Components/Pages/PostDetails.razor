@@ -18,6 +18,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ContentDbContext DbContext
 
+@inject IDbContextFactory<ContentDbContext> dbContextFactory
 @inject SignInManager<ApplicationUser> SignInManager
 
 
@@ -41,6 +42,19 @@
 <p>Score: @_currentPost.PostMetadata.NetVotes | Upvotes: @_currentPost.PostMetadata.Upvotes | Downvotes: @_currentPost.PostMetadata.Downvotes </p>
 
 
+<br />
+
+<Virtualize Context="comment" ItemsProvider="@LoadComments" ItemSize="100" OverscanCount="1">
+    <ItemContent>
+        <div>
+            <p>@comment.AuthorID</p>
+            <p>@comment.PostDate</p>
+            <div class="">
+            <p>@((MarkupString)comment.Content)</p>
+            </div>
+        </div>
+    </ItemContent>
+</Virtualize>
 
 @code {
 
@@ -72,6 +86,23 @@
         }
 
     }
+
+    private async ValueTask<ItemsProviderResult<Comment>> LoadComments(ItemsProviderRequest request) {
+        using var dbContext = dbContextFactory.CreateDbContext();
+
+        // Load the requested posts from the database
+        IEnumerable<Comment> newComments = await dbContext.Comments
+            .Where(comment => comment.PostId == _currentPost.Id)
+            .OrderByDescending(comment => comment.PostDate)
+            .Skip(request.StartIndex)
+            .Take(request.Count)
+            .ToListAsync();
+
+        int dynamicTotalCount = request.StartIndex + newComments.Count() + 10;
+
+        return new ItemsProviderResult<Comment>(newComments, dynamicTotalCount);
+    }
+
 
     private void GetPost(){
         _currentPost = DbContext.Posts.Where(post => post.Id == Id).Select(post => new ViewPostObject {
@@ -122,7 +153,6 @@
                 }
 
                 voteObject = DbContext.Votes.Where(vote => (vote.UserId == userId) && (vote.PostId == _currentPost.Id)).FirstOrDefault() ?? new Vote { UserId = userId, PostId = _currentPost.Id};
-                Debug.WriteLine("niggas");
             } else {
 
                 string ipAddress = HttpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
