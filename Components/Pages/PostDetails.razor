@@ -13,11 +13,9 @@
 @using Microsoft.AspNetCore.Identity
 
 @inject IHttpContextAccessor HttpContextAccessor
-
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ContentDbContext DbContext
-
 @inject IDbContextFactory<ContentDbContext> dbContextFactory
 @inject SignInManager<ApplicationUser> SignInManager
 
@@ -52,7 +50,7 @@
             <p>@comment.Author.UserName</p>
             <p>@ConvertDateToString(comment.PostDate)</p>
             <div class="">
-            <p>@((MarkupString)comment.Content)</p>
+                <p>@((MarkupString)comment.Content)</p>
             </div>
         </div>
     </ItemContent>
@@ -93,7 +91,7 @@
         using var dbContext = dbContextFactory.CreateDbContext();
 
         // Load the requested posts from the database
-        IEnumerable<Comment> newComments = await dbContext.Comments
+        var newComments = await dbContext.Comments
             .Include(comment => comment.Author)
             .Where(comment => comment.PostId == _currentPost.Id)
             .Select(comment => new Comment {
@@ -116,7 +114,6 @@
 
         return new ItemsProviderResult<Comment>(newComments, dynamicTotalCount);
     }
-
 
     private void GetPost(){
         _currentPost = DbContext.Posts.Where(post => post.Id == Id).Select(post => new ViewPostObject {
@@ -166,7 +163,7 @@
                     // Update the timesviewed field for the view
                 }
 
-                voteObject = DbContext.Votes.Where(vote => (vote.UserId == userId) && (vote.PostId == _currentPost.Id)).FirstOrDefault() ?? new Vote { UserId = userId, PostId = _currentPost.Id};
+                voteObject = DbContext.Votes.Where(vote => (vote.UserId == userId) && (vote.PostId == _currentPost.Id)).FirstOrDefault() ?? new Vote {UserId = userId, PostId = _currentPost.Id};
             } else {
 
                 string ipAddress = HttpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
@@ -197,7 +194,6 @@
         }
     }
 
-
     public static string ConvertDateToString(DateTime? date) {
         if (!date.HasValue) {
             return "Invalid date";
@@ -225,8 +221,6 @@
     }
 
     private void UpdateVote(bool voteType) {
-
-
         // Get the latest metadata
         GetPostMetaData();
 
@@ -240,7 +234,6 @@
                 _currentPost.PostMetadata.NetVotes += 1;
             }
         } else {
-
             if (voteType) {
                 _currentPost.PostMetadata.Upvotes += 1;
                 _currentPost.PostMetadata.NetVotes += 1;
@@ -263,7 +256,6 @@
 
         _ = DbContext.Votes.Any(v => v.PostId == _currentPost.Id && v.UserId == userId) ? DbContext.Votes.Update(voteObject) : DbContext.Votes.Add(voteObject);
         DbContext.SaveChangesAsync();
-
         Debug.WriteLine($"User has {voteType}d.");
         StateHasChanged();
     }

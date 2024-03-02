@@ -50,7 +50,7 @@
         using var dbContext = dbContextFactory.CreateDbContext();
 
         // Load the requested posts from the database
-        IEnumerable<Post> newPosts = await dbContext.Posts
+        var newPosts = await dbContext.Posts
             .Include(post => post.Author)
             .OrderByDescending(post => post.PostDate)
             .Select(post => new Post {
