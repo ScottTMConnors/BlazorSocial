@@ -168,7 +168,7 @@
 
                 string ipAddress = HttpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
 
-                // create do a view lookup for this ip
+                // create do a view lookup for this ip +
                 var AnonView = DbContext.AnonViews.Where(view => (view.IPAddress == ipAddress) && (view.PostId == _currentPost.Id)).FirstOrDefault();
 
                 if (AnonView == null) {

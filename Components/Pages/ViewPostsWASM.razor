@@ -1,0 +1,97 @@
+﻿@page "/ViewPostsWASM"
+
+
+@rendermode InteractiveWebAssembly
+
+@using Microsoft.AspNetCore.Authorization
+@using Data
+@using Data.Entities;
+@using Data.ComponentObjects;
+@using Microsoft.AspNetCore.Identity;
+@using Microsoft.EntityFrameworkCore;
+@using Microsoft.AspNetCore.Components.Web.Virtualization;
+
+
+
+@inject ContentDbContext DbContext
+
+@inject IDbContextFactory<ContentDbContext> dbContextFactory
+
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+<link rel="stylesheet" href="ViewPosts.css" asp-append-version="true" />
+
+
+<head>
+
+</head>
+
+<h3>View All Posts</h3>
+
+<Virtualize Context="post" ItemsProvider="@LoadPosts" ItemSize="400" OverscanCount="1">
+    <ItemContent>
+        <a href="/post/@post.Id" target="_blank" class="post-card" style="text-decoration:none;color:black;">
+            <div>
+                <p>@post.Author.UserName</p>
+                <h3>@post.Title</h3>
+                <p>@ConvertDateToString(post.PostDate)</p>
+                <div class="post-card-content">
+                    <p>@((MarkupString)post.Content)</p>
+                </div>
+            </div>
+        </a>
+    </ItemContent>
+</Virtualize>
+
+@code {
+
+    private async ValueTask<ItemsProviderResult<Post>> LoadPosts(ItemsProviderRequest request) {
+
+        using var dbContext = dbContextFactory.CreateDbContext();
+
+        // Load the requested posts from the database
+        var newPosts = await dbContext.Posts
+            .Include(post => post.Author)
+            .OrderByDescending(post => post.PostDate)
+            .Select(post => new Post {
+                    Id = post.Id,
+                    Title = post.Title,
+                    Content = post.Content.Substring(0, 1000),
+                    PostDate = post.PostDate,
+                    Author = post.Author,
+                    PostMetadata = post.PostMetadata
+                })
+            .Skip(request.StartIndex)
+            .Take(request.Count)
+            .ToListAsync();
+
+        int dynamicTotalCount;
+        if (newPosts.Count() < request.Count) {
+            dynamicTotalCount = request.StartIndex + newPosts.Count();
+        } else {
+            dynamicTotalCount = request.StartIndex + newPosts.Count() + 10; // buffer for more posts
+        }
+
+        return new ItemsProviderResult<Post>(newPosts, dynamicTotalCount);
+    }
+
+    public static string ConvertDateToString(DateTime? date) {
+        if (!date.HasValue) {
+            return "Invalid date";
+        }
+
+        TimeSpan difference = DateTime.Now - date.Value;
+
+        if (difference.TotalDays >= 1) {
+            return date.Value.ToString();
+        } else if (difference.TotalHours >= 1) {
+            return $"{(int)difference.TotalHours}h";
+        } else if (difference.TotalMinutes >= 1) {
+            return $"{(int)difference.TotalMinutes}m";
+        } else {
+            return $"{(int)difference.TotalSeconds}s";
+        }
+    }
+
+}
+
