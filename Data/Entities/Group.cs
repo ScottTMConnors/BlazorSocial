@@ -1,9 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using BlazorSocial.Data;
 
 namespace BlazorSocial.Data.Entities {
-    public class Group {
-        [Key]
-        public string Id { get; set; }
+    public class Group : BaseEntity<GroupId> {
         [StringLength(50)]
         public string GroupName { get; set; }
         [StringLength(1000)]

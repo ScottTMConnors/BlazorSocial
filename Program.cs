@@ -1,10 +1,12 @@
 using BlazorSocial.Components;
 using BlazorSocial.Components.Account;
 using BlazorSocial.Data;
+using BlazorSocial.Data.Entities;
+using BlazorSocial.Extensions;
+using BlazorSocial.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-//using BlazorSocial.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,43 +18,55 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
-//Service that handles metadata
-//builder.Services.AddSingleton<MetaService>();
 
-builder.Services.AddAuthentication(options => {
-    options.DefaultScheme = IdentityConstants.ApplicationScheme;
-    options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-})
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = IdentityConstants.ApplicationScheme;
+        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+    })
     .AddIdentityCookies();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+var connectionString = builder.Configuration.GetConnectionString("ContentConnection") ??
+                       throw new InvalidOperationException("Connection string 'ContentConnection' not found.");
+builder.Services.AddDbContext<ContentDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-var mediaconnectionString = builder.Configuration.GetConnectionString("ContentConnection") ?? throw new InvalidOperationException("Connection string 'ContentConnection' not found.");
-builder.Services.AddDbContext<ContentDbContext>(options =>
-    options.UseSqlServer(mediaconnectionString));
-
-builder.Services.AddDbContextFactory<ContentDbContext>(options => 
-    options.UseSqlServer(mediaconnectionString),
+builder.Services.AddDbContextFactory<ContentDbContext>(options =>
+        options.UseSqlServer(connectionString),
     ServiceLifetime.Scoped);
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>()
+builder.Services.AddIdentityCore<SocialUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddRoles<IdentityRole<UserId>>()
+    .AddEntityFrameworkStores<ContentDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
 
-builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+builder.Services.AddSingleton<IEmailSender<SocialUser>, IdentityNoOpEmailSender>();
+
+builder.Services.AddScoped<CurrentUserService>();
+builder.Services.AddScoped<DataGeneratorService>();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var contentDb = scope.ServiceProvider.GetRequiredService<ContentDbContext>();
+    contentDb.Database.EnsureCreated();
+}
+
+await app.SeedRolesAsync();
+await app.SeedAdminUserAsync();
+
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment()) {
+if (app.Environment.IsDevelopment())
+{
     app.UseMigrationsEndPoint();
-} else {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+}
+else
+{
+    app.UseExceptionHandler("/Error", true);
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }

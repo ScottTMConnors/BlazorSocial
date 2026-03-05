@@ -1,14 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using BlazorSocial.Data;
+using Microsoft.AspNetCore.Identity;
 
 namespace BlazorSocial.Data.Entities {
-    public class SocialUser {
-        [Key]
-        public string UserId { get; set; }
+    public class SocialUser : IdentityUser<UserId>, IEntity<UserId> {
+        public SocialUser()
+        {
+            Id = UserId.New();
+        }
+
         [StringLength(30)]
-        public string UserName { get; set; }
-        public string NormalizedUserName { get; set; }
-        [NotMapped]
-        public ApplicationUser? User { get; set; }
+        public string DisplayName { get; set; } = "";
     }
 }

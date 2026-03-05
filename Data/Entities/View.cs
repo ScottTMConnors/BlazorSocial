@@ -1,16 +1,19 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using BlazorSocial.Data;
+using Microsoft.EntityFrameworkCore;
 
-namespace BlazorSocial.Data.Entities {
-    [PrimaryKey(nameof(PostId), nameof(UserId))]
-    public class View {
-        [ForeignKey("Post")]
-        public string PostId { get; set; }
-        [ForeignKey("SocialUser")]
-        public string UserId { get; set; }
-        public DateTime ViewDate { get; set; }
-        public int TimesViewed { get; set; }
-        public Post? Post { get; set; }
-        public SocialUser? User { get; set; }
-    }
+namespace BlazorSocial.Data.Entities;
+
+[PrimaryKey(nameof(PostId), nameof(UserId))]
+public record View
+{
+    [ForeignKey("Post")] public PostId PostId { get; set; } = null!;
+
+    [ForeignKey("User")] public UserId? UserId { get; set; }
+
+    public DateTime ViewDateTime { get; set; }
+
+    [NotMapped] public Post? Post { get; set; }
+
+    [NotMapped] public SocialUser? User { get; set; }
 }

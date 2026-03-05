@@ -1,6 +1,7 @@
 using BlazorSocial.Components.Account.Pages;
 using BlazorSocial.Components.Account.Pages.Manage;
 using BlazorSocial.Data;
+using BlazorSocial.Data.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Routing {
 
             accountGroup.MapPost("/PerformExternalLogin", (
                 HttpContext context,
-                [FromServices] SignInManager<ApplicationUser> signInManager,
+                [FromServices] SignInManager<SocialUser> signInManager,
                 [FromForm] string provider,
                 [FromForm] string returnUrl) => {
                     IEnumerable<KeyValuePair<string, StringValues>> query = [
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Routing {
 
             accountGroup.MapPost("/Logout", async (
                 ClaimsPrincipal user,
-                SignInManager<ApplicationUser> signInManager,
+                SignInManager<SocialUser> signInManager,
                 [FromForm] string returnUrl) => {
                     await signInManager.SignOutAsync();
                     return TypedResults.LocalRedirect($"~/{returnUrl}");
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.Routing {
 
             manageGroup.MapPost("/LinkExternalLogin", async (
                 HttpContext context,
-                [FromServices] SignInManager<ApplicationUser> signInManager,
+                [FromServices] SignInManager<SocialUser> signInManager,
                 [FromForm] string provider) => {
                     // Clear the existing external cookie to ensure a clean login process
                     await context.SignOutAsync(IdentityConstants.ExternalScheme);
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Routing {
 
             manageGroup.MapPost("/DownloadPersonalData", async (
                 HttpContext context,
-                [FromServices] UserManager<ApplicationUser> userManager,
+                [FromServices] UserManager<SocialUser> userManager,
                 [FromServices] AuthenticationStateProvider authenticationStateProvider) => {
                     var user = await userManager.GetUserAsync(context.User);
                     if (user is null) {
@@ -79,7 +80,7 @@ namespace Microsoft.AspNetCore.Routing {
 
                     // Only include personal data for download
                     var personalData = new Dictionary<string, string>();
-                    var personalDataProps = typeof(ApplicationUser).GetProperties().Where(
+                    var personalDataProps = typeof(SocialUser).GetProperties().Where(
                         prop => Attribute.IsDefined(prop, typeof(PersonalDataAttribute)));
                     foreach (var p in personalDataProps) {
                         personalData.Add(p.Name, p.GetValue(user)?.ToString() ?? "null");

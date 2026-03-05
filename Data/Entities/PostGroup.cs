@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using BlazorSocial.Data;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -7,9 +8,9 @@ namespace BlazorSocial.Data.Entities {
         [Key]
         public int Id { get; set; }
         [ForeignKey("Post")]
-        public string PostId { get; set; }
+        public PostId PostId { get; set; } = null!;
         [ForeignKey("Group")]
-        public string GroupId { get; set; }
+        public GroupId GroupId { get; set; } = null!;
         public Post? Post { get; set; }
         public Group? Group { get; set; }
     }

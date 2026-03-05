@@ -1,15 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using BlazorSocial.Data;
 
 namespace BlazorSocial.Data.Entities {
-    public class Comment {
-        [Key]
-        public string Id { get; set; }
+    public class Comment : BaseEntity<CommentId> {
         [ForeignKey("Post")]
-        public string PostId { get; set; }
+        public PostId PostId { get; set; } = null!;
         public Post? Post { get; set; }
-        [ForeignKey("SocialUser")]
-        public string? AuthorID { get; set; }
+        [ForeignKey("Author")]
+        public UserId? AuthorID { get; set; }
         public SocialUser? Author { get; set; }
         [StringLength(1000)]
         public string Content { get; set; }
