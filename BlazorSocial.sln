@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.3.11520.95
@@ -25,14 +25,14 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{75CF0E14-4D78-466F-8346-AB000FB8F13B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{75CF0E14-4D78-466F-8346-AB000FB8F13B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{75CF0E14-4D78-466F-8346-AB000FB8F13B}.Debug|x64.ActiveCfg = Debug|x64
-		{75CF0E14-4D78-466F-8346-AB000FB8F13B}.Debug|x64.Build.0 = Debug|x64
+		{75CF0E14-4D78-466F-8346-AB000FB8F13B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{75CF0E14-4D78-466F-8346-AB000FB8F13B}.Debug|x64.Build.0 = Debug|Any CPU
 		{75CF0E14-4D78-466F-8346-AB000FB8F13B}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{75CF0E14-4D78-466F-8346-AB000FB8F13B}.Debug|x86.Build.0 = Debug|Any CPU
 		{75CF0E14-4D78-466F-8346-AB000FB8F13B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75CF0E14-4D78-466F-8346-AB000FB8F13B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{75CF0E14-4D78-466F-8346-AB000FB8F13B}.Release|x64.ActiveCfg = Release|x64
-		{75CF0E14-4D78-466F-8346-AB000FB8F13B}.Release|x64.Build.0 = Release|x64
+		{75CF0E14-4D78-466F-8346-AB000FB8F13B}.Release|x64.ActiveCfg = Release|Any CPU
+		{75CF0E14-4D78-466F-8346-AB000FB8F13B}.Release|x64.Build.0 = Release|Any CPU
 		{75CF0E14-4D78-466F-8346-AB000FB8F13B}.Release|x86.ActiveCfg = Release|Any CPU
 		{75CF0E14-4D78-466F-8346-AB000FB8F13B}.Release|x86.Build.0 = Release|Any CPU
 		{9F5F83D6-B8C2-4B1A-A259-FC82A192665D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

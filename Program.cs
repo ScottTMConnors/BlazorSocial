@@ -96,12 +96,15 @@ app.MapGet("/api/posts",
         {
             await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
+            //await Task.Delay(2000, ct);
+
             var dbPosts = await dbContext.Posts
                 .Include(post => post.Author)
                 .OrderByDescending(post => post.PostDate)
                 .Skip(startIndex)
                 .Take(count)
                 .ToListAsync(ct);
+
 
             var posts = dbPosts.Select(post => new
             {
@@ -116,6 +119,10 @@ app.MapGet("/api/posts",
             return Results.Ok(posts);
         }
         catch (OperationCanceledException)
+        {
+            return Results.StatusCode(499);
+        }
+        catch (InvalidOperationException) when (ct.IsCancellationRequested)
         {
             return Results.StatusCode(499);
         }

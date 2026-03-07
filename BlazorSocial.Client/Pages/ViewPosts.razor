@@ -3,58 +3,98 @@
 
 @rendermode @(new InteractiveWebAssemblyRenderMode(false))
 
+@implements IAsyncDisposable
+
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JS
 
 <link rel="stylesheet" href="ViewPosts.css" asp-append-version="true"/>
 
 <h3>View All Posts</h3>
 
-<FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
-    <Virtualize Context="post" ItemsProvider="@LoadPosts" ItemSize="400" OverscanCount="1">
-        <ItemContent>
-            <FluentAnchor OnClick="@(() => NavigateToPost(post.PostId))" Appearance="Appearance.Hypertext" Target="_blank" style="text-decoration:none;width:100%;">
-                <FluentCard AreaRestricted="false" style="max-width:600px;min-height:300px;margin:0 auto;padding:16px;">
-                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="4">
-                        <FluentLabel Typo="Typography.Body">@post.AuthorName</FluentLabel>
-                        <FluentLabel Typo="Typography.H3">@post.Title</FluentLabel>
-                        <FluentLabel Typo="Typography.Body" Color="Color.Neutral">@ConvertDateToString(post.PostDate)</FluentLabel>
-                        <FluentDivider Role="DividerRole.Separator"/>
-                        <div class="post-card-content">
-                            @((MarkupString)post.Content)
-                        </div>
-                    </FluentStack>
-                </FluentCard>
-            </FluentAnchor>
-        </ItemContent>
-    </Virtualize>
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="10" style="max-width:1000px; margin:0 auto 0 auto;">
+    @foreach (var post in _posts)
+    {
+        <FluentCard @onclick="@(() => NavigateToPost(post.PostId))" AreaRestricted="true" style="width:100%;max-height:350px;padding:16px;overflow:hidden;">
+            <FluentLabel Typo="Typography.Body">@post.AuthorName</FluentLabel>
+            <div class="post-card-title">
+                <FluentLabel Typo="Typography.H3">@post.Title</FluentLabel>
+            </div>
+            <FluentLabel Typo="Typography.Body" Color="Color.Neutral">@ConvertDateToString(post.PostDate)</FluentLabel>
+            <FluentDivider Role="DividerRole.Separator"/>
+            <div class="post-card-content">
+                @((MarkupString)post.Content)
+            </div>
+        </FluentCard>
+        <FluentDivider Role="DividerRole.Separator" style="width: 100%;"/>
+    }
+    @if (!_allLoaded)
+    {
+        <div @ref="_sentinelRef" style="height:1px;"></div>
+    }
 </FluentStack>
+<FluentProgressRing style="margin: 10px auto;"></FluentProgressRing>
 
 @code {
 
-    private async ValueTask<ItemsProviderResult<ViewPostDto>> LoadPosts(ItemsProviderRequest request)
+    private const int PageSize = 10;
+    private readonly List<ViewPostDto> _posts = [];
+    private ElementReference _sentinelRef;
+    private IJSObjectReference? _module;
+    private DotNetObjectReference<ViewPosts>? _selfRef;
+    private bool _loading;
+    private bool _allLoaded;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            await LoadMorePosts();
+            StateHasChanged();
+
+            _module = await JS.InvokeAsync<IJSObjectReference>(
+                "import", "./js/ViewPosts.js");
+            _selfRef = DotNetObjectReference.Create(this);
+            await _module.InvokeVoidAsync("observe", _sentinelRef, _selfRef);
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnSentinelVisible()
+    {
+        if (_loading || _allLoaded) return;
+        await LoadMorePosts();
+        StateHasChanged();
+
+        if (!_allLoaded && _module is not null)
+        {
+            await _module.InvokeVoidAsync("observe", _sentinelRef, _selfRef);
+        }
+    }
+
+    private async Task LoadMorePosts()
+    {
+        _loading = true;
         try
         {
-            var posts = await Http.GetFromJsonAsync<List<ViewPostDto>>(
-                $"api/posts?startIndex={request.StartIndex}&count={request.Count}",
-                request.CancellationToken) ?? [];
+            var newPosts = await Http.GetFromJsonAsync<List<ViewPostDto>>(
+                $"api/posts?startIndex={_posts.Count}&count={PageSize}") ?? [];
 
-            int dynamicTotalCount;
-            if (posts.Count < request.Count)
-            {
-                dynamicTotalCount = request.StartIndex + posts.Count;
-            }
-            else
-            {
-                dynamicTotalCount = request.StartIndex + posts.Count + 10; // buffer for more posts
-            }
+            _posts.AddRange(newPosts);
 
-            return new ItemsProviderResult<ViewPostDto>(posts, dynamicTotalCount);
+            if (newPosts.Count < PageSize)
+            {
+                _allLoaded = true;
+            }
         }
-        catch (Exception) when (request.CancellationToken.IsCancellationRequested)
+        catch
         {
-            return new ItemsProviderResult<ViewPostDto>([], 0);
+            // Swallow – the user can retry by scrolling again
+        }
+        finally
+        {
+            _loading = false;
         }
     }
 
@@ -89,6 +129,17 @@
     {
         var url = $"/PostDetails/{postId:N}";
         NavigationManager.NavigateTo(url);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is not null)
+        {
+            await _module.InvokeVoidAsync("disconnect");
+            await _module.DisposeAsync();
+        }
+
+        _selfRef?.Dispose();
     }
 
 }
