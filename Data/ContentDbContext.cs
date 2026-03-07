@@ -10,7 +10,6 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options)
 {
     public DbSet<Post> Posts { get; set; }
     public DbSet<Comment> Comments { get; set; }
-    public DbSet<PostType> PostTypes { get; set; }
     public DbSet<PostGroup> PostGroups { get; set; }
     public DbSet<Vote> Votes { get; set; }
     public DbSet<Group> Groups { get; set; }
@@ -63,6 +62,7 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options)
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
+        configurationBuilder.Properties<PostType>().HaveConversion<SmartEnumConverter<PostType>>();
         configurationBuilder.Properties<UserId>().HaveConversion<UniqueIdConverter<UserId>>();
         configurationBuilder.Properties<PostId>().HaveConversion<UniqueIdConverter<PostId>>();
         configurationBuilder.Properties<CommentId>().HaveConversion<UniqueIdConverter<CommentId>>();

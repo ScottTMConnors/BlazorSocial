@@ -68,7 +68,7 @@
         {
             var userId = CurrentUserService.CurrentUser.Id;
 
-            var newPost = new Post(Input.Title, Input.Content, userId, DateTime.Now);
+            var newPost = new Post(Input.Title, Input.Content, userId, DateTime.Now, PostType.Text);
 
             DbContext.Posts.Add(newPost);
             await DbContext.SaveChangesAsync();

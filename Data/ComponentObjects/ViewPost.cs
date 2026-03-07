@@ -2,11 +2,12 @@
 
 namespace BlazorSocial.Data.ComponentObjects;
 
-public record ViewPost(Post post)
+public record ViewPost(Post Post)
 {
-    public PostId PostId { get; set; } = post.Id;
-    public string Title { get; set; } = post.Title;
-    public string Content { get; set; } = post.Content;
-    public DateTime PostDate { get; set; } = post.PostDate;
-    public string AuthorName { get; set; } = post.Author?.UserName ?? "Unknown";
+    public PostId PostId { get; set; } = Post.Id;
+    public string Title { get; set; } = Post.Title;
+    public string Content { get; set; } = Post.Content;
+    public DateTime PostDate { get; set; } = Post.PostDate;
+    public PostType PostType { get; set; } = Post.PostType;
+    public string AuthorName { get; set; } = Post.Author?.UserName ?? "Unknown";
 }

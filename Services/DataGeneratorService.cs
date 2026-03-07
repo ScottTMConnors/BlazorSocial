@@ -115,7 +115,7 @@ public class DataGeneratorService(IDbContextFactory<ContentDbContext> DbContextF
                 .AddMinutes(random.Next(DateTime.Now.Minute)).AddSeconds(random.Next(DateTime.Now.Second));
 
 
-            var newPost = new Post(string.Empty, string.Empty, userId, randomDate);
+            var newPost = new Post(string.Empty, string.Empty, userId, randomDate, PostType.Text);
 
             var viewvoteTask = GenerateViewsandVotes(newPost, numberOfInteractions);
 

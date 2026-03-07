@@ -1,0 +1,94 @@
+@page "/"
+@page "/ViewPosts"
+
+@rendermode @(new InteractiveWebAssemblyRenderMode(false))
+
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<link rel="stylesheet" href="ViewPosts.css" asp-append-version="true"/>
+
+<h3>View All Posts</h3>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+    <Virtualize Context="post" ItemsProvider="@LoadPosts" ItemSize="400" OverscanCount="1">
+        <ItemContent>
+            <FluentAnchor OnClick="@(() => NavigateToPost(post.PostId))" Appearance="Appearance.Hypertext" Target="_blank" style="text-decoration:none;width:100%;">
+                <FluentCard AreaRestricted="false" style="max-width:600px;min-height:300px;margin:0 auto;padding:16px;">
+                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="4">
+                        <FluentLabel Typo="Typography.Body">@post.AuthorName</FluentLabel>
+                        <FluentLabel Typo="Typography.H3">@post.Title</FluentLabel>
+                        <FluentLabel Typo="Typography.Body" Color="Color.Neutral">@ConvertDateToString(post.PostDate)</FluentLabel>
+                        <FluentDivider Role="DividerRole.Separator"/>
+                        <div class="post-card-content">
+                            @((MarkupString)post.Content)
+                        </div>
+                    </FluentStack>
+                </FluentCard>
+            </FluentAnchor>
+        </ItemContent>
+    </Virtualize>
+</FluentStack>
+
+@code {
+
+    private async ValueTask<ItemsProviderResult<ViewPostDto>> LoadPosts(ItemsProviderRequest request)
+    {
+        try
+        {
+            var posts = await Http.GetFromJsonAsync<List<ViewPostDto>>(
+                $"api/posts?startIndex={request.StartIndex}&count={request.Count}",
+                request.CancellationToken) ?? [];
+
+            int dynamicTotalCount;
+            if (posts.Count < request.Count)
+            {
+                dynamicTotalCount = request.StartIndex + posts.Count;
+            }
+            else
+            {
+                dynamicTotalCount = request.StartIndex + posts.Count + 10; // buffer for more posts
+            }
+
+            return new ItemsProviderResult<ViewPostDto>(posts, dynamicTotalCount);
+        }
+        catch (Exception) when (request.CancellationToken.IsCancellationRequested)
+        {
+            return new ItemsProviderResult<ViewPostDto>([], 0);
+        }
+    }
+
+    public static string ConvertDateToString(DateTime? date)
+    {
+        if (!date.HasValue)
+        {
+            return "Invalid date";
+        }
+
+        var difference = DateTime.Now - date.Value;
+
+        if (difference.TotalDays >= 1)
+        {
+            return date.Value.ToString();
+        }
+
+        if (difference.TotalHours >= 1)
+        {
+            return $"{(int)difference.TotalHours}h";
+        }
+
+        if (difference.TotalMinutes >= 1)
+        {
+            return $"{(int)difference.TotalMinutes}m";
+        }
+
+        return $"{(int)difference.TotalSeconds}s";
+    }
+
+    private void NavigateToPost(Guid postId)
+    {
+        var url = $"/PostDetails/{postId:N}";
+        NavigationManager.NavigateTo(url);
+    }
+
+}

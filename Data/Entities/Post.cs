@@ -5,12 +5,13 @@ namespace BlazorSocial.Data.Entities;
 
 public class Post : BaseEntity<PostId>
 {
-    public Post(string title, string content, UserId authorId, DateTime postDate)
+    public Post(string title, string content, UserId authorId, DateTime postDate, PostType postType)
     {
         Title = title;
         Content = content;
         AuthorId = authorId;
         PostDate = postDate;
+        PostType = postType;
         PostMetadata = new PostMetadata(Id);
     }
 
@@ -25,6 +26,8 @@ public class Post : BaseEntity<PostId>
     //public PostType? PostType { get; set; }
     public SocialUser? Author { get; set; }
     public PostMetadata PostMetadata { get; set; }
+
+    public PostType PostType { get; set; }
 
     [NotMapped] public IEnumerable<Group>? Groups { get; set; }
 

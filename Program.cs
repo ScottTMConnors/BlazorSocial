@@ -1,3 +1,4 @@
+using BlazorSocial.Client.Models;
 using BlazorSocial.Components;
 using BlazorSocial.Components.Account;
 using BlazorSocial.Data;
@@ -7,12 +8,16 @@ using BlazorSocial.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.FluentUI.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+    .AddInteractiveServerComponents()
+    .AddInteractiveWebAssemblyComponents();
+
+builder.Services.AddFluentUIComponents();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
@@ -27,7 +32,8 @@ builder.Services.AddAuthentication(options =>
     .AddIdentityCookies();
 
 var contentDbPath = Path.Combine(builder.Environment.ContentRootPath, "ContentDatabase.mdf");
-var connectionString = $"Server=(localdb)\\mssqllocaldb;Database=ContentDatabase;AttachDbFilename={contentDbPath};Trusted_Connection=True;MultipleActiveResultSets=true";
+var connectionString =
+    $"Server=(localdb)\\mssqllocaldb;Database=ContentDatabase;AttachDbFilename={contentDbPath};Trusted_Connection=True;MultipleActiveResultSets=true";
 builder.Services.AddDbContext<ContentDbContext>(options =>
     options.UseSqlServer(connectionString));
 
@@ -75,11 +81,45 @@ else
 
 app.UseHttpsRedirection();
 
-app.UseStaticFiles();
+app.MapStaticAssets();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+    .AddInteractiveServerRenderMode()
+    .AddInteractiveWebAssemblyRenderMode()
+    .AddAdditionalAssemblies(typeof(ViewPostDto).Assembly);
+
+app.MapGet("/api/posts",
+    async (int startIndex, int count, IDbContextFactory<ContentDbContext> dbContextFactory, CancellationToken ct) =>
+    {
+        try
+        {
+            await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
+
+            var dbPosts = await dbContext.Posts
+                .Include(post => post.Author)
+                .OrderByDescending(post => post.PostDate)
+                .Skip(startIndex)
+                .Take(count)
+                .ToListAsync(ct);
+
+            var posts = dbPosts.Select(post => new
+            {
+                PostId = post.Id.Value,
+                post.Title,
+                post.Content,
+                post.PostDate,
+                PostType = post.PostType.Name,
+                AuthorName = post.Author?.UserName ?? "Unknown"
+            });
+
+            return Results.Ok(posts);
+        }
+        catch (OperationCanceledException)
+        {
+            return Results.StatusCode(499);
+        }
+    });
 
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
