@@ -25,14 +25,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\Migrations\" />
     <Folder Include="Migrations\ContentDb\" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="BlazorSocial.Client\**" />
+    <Compile Remove="Data\Migrations\**" />
     <Content Remove="BlazorSocial.Client\**" />
+    <Content Remove="Data\Migrations\**" />
+    <EmbeddedResource Remove="Data\Migrations\**" />
     <None Remove="BlazorSocial.Client\**" />
+    <None Remove="Data\Migrations\**" />
   </ItemGroup>
 
   <ItemGroup>

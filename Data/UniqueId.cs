@@ -82,6 +82,10 @@ public sealed class GroupId : UniqueId<GroupId>
 {
 }
 
+public sealed class ViewId : UniqueId<ViewId>
+{
+}
+
 // Single generic EF Core Value Converter for all UniqueId-derived types
 
 public class UniqueIdConverter<TSelf> : ValueConverter<TSelf, Guid>

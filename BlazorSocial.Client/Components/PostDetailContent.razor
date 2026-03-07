@@ -90,6 +90,7 @@ else
     private DotNetObjectReference<PostDetailContent>? _selfRef;
     private bool _loadingComments;
     private bool _allCommentsLoaded;
+    private bool _afterLoadInitialized;
 
     protected override async Task OnInitializedAsync()
     {
@@ -118,8 +119,9 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && _isLoaded)
+        if (_isLoaded && !_afterLoadInitialized)
         {
+            _afterLoadInitialized = true;
             _ = Http.PostAsync($"api/posts/{PostId}/view", null);
 
             await LoadMoreComments();

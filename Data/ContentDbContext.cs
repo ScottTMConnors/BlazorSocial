@@ -43,6 +43,7 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options)
             entity.HasOne(v => v.User)
                 .WithMany()
                 .HasForeignKey(v => v.UserId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.ClientCascade);
         });
 
@@ -67,5 +68,6 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options)
         configurationBuilder.Properties<PostId>().HaveConversion<UniqueIdConverter<PostId>>();
         configurationBuilder.Properties<CommentId>().HaveConversion<UniqueIdConverter<CommentId>>();
         configurationBuilder.Properties<GroupId>().HaveConversion<UniqueIdConverter<GroupId>>();
+        configurationBuilder.Properties<ViewId>().HaveConversion<UniqueIdConverter<ViewId>>();
     }
 }
