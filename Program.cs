@@ -26,8 +26,8 @@ builder.Services.AddAuthentication(options =>
     })
     .AddIdentityCookies();
 
-var connectionString = builder.Configuration.GetConnectionString("ContentConnection") ??
-                       throw new InvalidOperationException("Connection string 'ContentConnection' not found.");
+var contentDbPath = Path.Combine(builder.Environment.ContentRootPath, "ContentDatabase.mdf");
+var connectionString = $"Server=(localdb)\\mssqllocaldb;Database=ContentDatabase;AttachDbFilename={contentDbPath};Trusted_Connection=True;MultipleActiveResultSets=true";
 builder.Services.AddDbContext<ContentDbContext>(options =>
     options.UseSqlServer(connectionString));
 
@@ -58,6 +58,7 @@ using (var scope = app.Services.CreateScope())
 
 await app.SeedRolesAsync();
 await app.SeedAdminUserAsync();
+await app.SeedDevelopmentDataAsync();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

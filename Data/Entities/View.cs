@@ -13,7 +13,7 @@ public record View
 
     public DateTime ViewDateTime { get; set; }
 
-    [NotMapped] public Post? Post { get; set; }
+    public Post? Post { get; set; }
 
-    [NotMapped] public SocialUser? User { get; set; }
+    public SocialUser? User { get; set; }
 }

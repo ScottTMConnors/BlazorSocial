@@ -1,6 +1,8 @@
 using BlazorSocial.Data;
 using BlazorSocial.Data.Entities;
+using BlazorSocial.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace BlazorSocial.Extensions;
 
@@ -45,6 +47,24 @@ public static class IdentitySeedExtensions
                 await userManager.CreateAsync(adminUser, "Admin123!");
                 await userManager.AddToRoleAsync(adminUser, "Admin");
             }
+
+            return app;
+        }
+
+        public async Task<WebApplication> SeedDevelopmentDataAsync()
+        {
+            if (!app.Environment.IsDevelopment())
+                return app;
+
+            using var scope = app.Services.CreateScope();
+            var dbContextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<ContentDbContext>>();
+
+            await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            if (await dbContext.Posts.AnyAsync())
+                return app;
+
+            var generator = scope.ServiceProvider.GetRequiredService<DataGeneratorService>();
+            await generator.GenerateData(numberOfUsers: 100, numberOfPosts: 100, numberOfInteractions: 999);
 
             return app;
         }

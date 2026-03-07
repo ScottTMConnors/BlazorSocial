@@ -17,6 +17,50 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options)
     public DbSet<View> Views { get; set; }
     public DbSet<PostMetadata> PostMetadatas { get; set; }
 
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+
+        builder.Entity<Vote>(entity =>
+        {
+            entity.HasOne(v => v.Post)
+                .WithMany()
+                .HasForeignKey(v => v.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(v => v.User)
+                .WithMany()
+                .HasForeignKey(v => v.UserId)
+                .OnDelete(DeleteBehavior.ClientCascade);
+        });
+
+        builder.Entity<View>(entity =>
+        {
+            entity.HasOne(v => v.Post)
+                .WithMany()
+                .HasForeignKey(v => v.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(v => v.User)
+                .WithMany()
+                .HasForeignKey(v => v.UserId)
+                .OnDelete(DeleteBehavior.ClientCascade);
+        });
+
+        builder.Entity<Comment>(entity =>
+        {
+            entity.HasOne(c => c.Post)
+                .WithMany()
+                .HasForeignKey(c => c.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(c => c.Author)
+                .WithMany()
+                .HasForeignKey(c => c.AuthorID)
+                .OnDelete(DeleteBehavior.ClientCascade);
+        });
+    }
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.Properties<UserId>().HaveConversion<UniqueIdConverter<UserId>>();
