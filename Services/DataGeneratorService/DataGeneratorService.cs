@@ -1,13 +1,16 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using BlazorSocial.Data;
 using BlazorSocial.Data.Entities;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using NameGenerator.Generators;
 
-namespace BlazorSocial.Services;
+namespace BlazorSocial.Services.DataGeneratorService;
 
 public class DataGeneratorService(IDbContextFactory<ContentDbContext> DbContextFactory)
 {
@@ -24,6 +27,8 @@ public class DataGeneratorService(IDbContextFactory<ContentDbContext> DbContextF
     private readonly ConcurrentBag<View> _viewList = [];
 
     private readonly ConcurrentBag<Vote> _voteList = [];
+
+    private readonly bool UseReddit = true;
     private List<Post> PostList { get; set; } = [];
 
     private List<SocialUser> UserList { get; set; } = [];
@@ -38,7 +43,14 @@ public class DataGeneratorService(IDbContextFactory<ContentDbContext> DbContextF
         UserList = GenerateUsers(numberOfUsers);
 
         //Generate random posts
-        PostList = GeneratePosts(numberOfPosts, numberOfInteractions);
+        if (UseReddit)
+        {
+            PostList = await GeneratePostsFromReddit(numberOfInteractions);
+        }
+        else
+        {
+            PostList = GeneratePosts(numberOfPosts, numberOfInteractions);
+        }
 
         // Generate User/Post views and votes
 
@@ -142,6 +154,68 @@ public class DataGeneratorService(IDbContextFactory<ContentDbContext> DbContextF
         });
 
         return GeneratedPosts.ToList();
+    }
+
+    private async Task<List<Post>> GeneratePostsFromReddit(int numberOfInteractions)
+    {
+        var subreddit = "confession";
+        var url = $"https://www.reddit.com/r/{Uri.EscapeDataString(subreddit)}/hot.json?limit=100";
+
+        using var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("BlazorSocial", "1.0"));
+
+        var response = await httpClient.GetAsync(url);
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadAsStringAsync();
+
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+        var listing = JsonSerializer.Deserialize<RedditData>(json, options)
+                      ?? throw new InvalidOperationException("Failed to deserialize Reddit listing.");
+
+        var generatedPosts = new List<Post>();
+        var random = new Random();
+
+        foreach (var child in listing.Data.Children)
+        {
+            var data = child.Data;
+
+            var title = data.Title;
+            if (title.Length > _maxTitle)
+            {
+                title = title[.._maxTitle];
+            }
+
+            var content = data.Selftext;
+            if (content.Length > _maxContent)
+            {
+                content = content[.._maxContent];
+            }
+
+            var postDate = DateTimeOffset.FromUnixTimeSeconds((long)data.CreatedUtc).LocalDateTime;
+
+            var postType = data.IsVideo ? PostType.Video
+                : data.IsSelf ? PostType.Text
+                : PostType.Link;
+
+            var userId = UserList[random.Next(UserList.Count)].Id;
+
+            var newPost = new Post(title, content, userId, postDate, postType);
+
+            GenerateViewsandVotes(newPost, numberOfInteractions);
+
+            generatedPosts.Add(newPost);
+
+            var newMetadata = new PostMetadata(newPost.Id);
+            _postMetaList.Add(newMetadata);
+        }
+
+        return generatedPosts;
     }
 
     private Task GenerateViewsandVotes(Post post, int numberOfInteractions)

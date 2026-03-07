@@ -12,43 +12,56 @@
 @inject ContentDbContext DbContext
 @inject IDbContextFactory<ContentDbContext> dbContextFactory
 
-<div class="post-card">
-    <h1>@_currentPost.Title</h1>
-    <br/>
-    <p>@((MarkupString)_currentPost.Content)</p>
-    <br/>
-    <p>@_currentPost.PostDate</p>
-    <br/>
-    <p>Views: @_currentPost.PostMetadata.ViewCount</p>
-    <br/>
-    <div>
-        @if (authenticated)
-        {
-            <button style="outline: none !important;" class="votebutton @(voteObject.IsUpvote && voteObject.IsActive ? "text-warning" : "text-secondary")" @onclick="Upvote">
-                <i class="bi bi-arrow-up"></i>
-            </button>
+@if (IsLoaded)
+{
+    <div class="post-card">
+        <h1>@_currentPost.Title</h1>
+        <br/>
+        <p>@((MarkupString)_currentPost.Content)</p>
+        <br/>
+        <p>@_currentPost.PostDate</p>
+        <br/>
+        <p>Views: @_currentPost.PostMetadata.ViewCount</p>
+        <br/>
+        <div>
+            @if (authenticated)
+            {
+                <button style="outline: none !important;" class="votebutton @(voteObject.IsUpvote && voteObject.IsActive ? "text-warning" : "text-secondary")" @onclick="Upvote">
+                    <i class="bi bi-arrow-up"></i>
+                </button>
 
-            <button style="outline: none !important;" class="votebutton @(!voteObject.IsUpvote && voteObject.IsActive ? "text-purple" : "text-secondary")" @onclick="Downvote">
-                <i class="bi bi-arrow-down"></i>
-            </button>
-        }
-        <p>Score: @_currentPost.PostMetadata.NetVotes | Upvotes: @_currentPost.PostMetadata.Upvotes | Downvotes: @_currentPost.PostMetadata.Downvotes </p>
-    </div>
-</div>
-
-<br/>
-
-<Virtualize Context="comment" ItemsProvider="@LoadComments" ItemSize="100" OverscanCount="1">
-    <ItemContent>
-        <div class="comment-card">
-            <p>@comment.Author.DisplayName</p>
-            <p>@ConvertDateToString(comment.PostDate)</p>
-            <div class="">
-                <p>@((MarkupString)comment.Content)</p>
-            </div>
+                <button style="outline: none !important;" class="votebutton @(!voteObject.IsUpvote && voteObject.IsActive ? "text-purple" : "text-secondary")" @onclick="Downvote">
+                    <i class="bi bi-arrow-down"></i>
+                </button>
+            }
+            <p>Score: @_currentPost.PostMetadata.NetVotes | Upvotes: @_currentPost.PostMetadata.Upvotes | Downvotes: @_currentPost.PostMetadata.Downvotes </p>
         </div>
-    </ItemContent>
-</Virtualize>
+    </div>
+
+    <br/>
+
+    <Virtualize Context="comment" ItemsProvider="@LoadComments" ItemSize="100" OverscanCount="1">
+        <ItemContent>
+            <div class="comment-card">
+                <p>@comment.Author.DisplayName</p>
+                <p>@ConvertDateToString(comment.PostDate)</p>
+                <div class="">
+                    <p>@((MarkupString)comment.Content)</p>
+                </div>
+            </div>
+        </ItemContent>
+        <EmptyContent>
+            <p>No comments yet.</p>
+        </EmptyContent>
+        <Placeholder>
+            <FluentProgressRing style="margin: 10px auto;"/>
+        </Placeholder>
+    </Virtualize>
+}
+else
+{
+    <FluentProgressRing style="margin: 10px auto;"/>
+}
 
 @code {
 
@@ -65,6 +78,8 @@
     private Vote? voteObject;
 
     //private SocialUser? user;
+
+    private bool IsLoaded { get; set; }
 
 
     protected override async Task OnInitializedAsync()
@@ -90,6 +105,8 @@
         {
             NavigationManager.NavigateTo("/ViewPosts");
         }
+
+        IsLoaded = true;
     }
 
     private async ValueTask<ItemsProviderResult<Comment>> LoadComments(ItemsProviderRequest request)

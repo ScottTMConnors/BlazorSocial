@@ -1,6 +1,6 @@
 using BlazorSocial.Data;
 using BlazorSocial.Data.Entities;
-using BlazorSocial.Services;
+using BlazorSocial.Services.DataGeneratorService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -54,14 +54,18 @@ public static class IdentitySeedExtensions
         public async Task<WebApplication> SeedDevelopmentDataAsync()
         {
             if (!app.Environment.IsDevelopment())
+            {
                 return app;
+            }
 
             using var scope = app.Services.CreateScope();
             var dbContextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<ContentDbContext>>();
 
             await using var dbContext = await dbContextFactory.CreateDbContextAsync();
             if (await dbContext.Posts.AnyAsync())
+            {
                 return app;
+            }
 
             var generator = scope.ServiceProvider.GetRequiredService<DataGeneratorService>();
             await generator.GenerateData(numberOfUsers: 100, numberOfPosts: 100, numberOfInteractions: 999);

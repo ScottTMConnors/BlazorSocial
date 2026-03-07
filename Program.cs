@@ -5,6 +5,7 @@ using BlazorSocial.Data;
 using BlazorSocial.Data.Entities;
 using BlazorSocial.Extensions;
 using BlazorSocial.Services;
+using BlazorSocial.Services.DataGeneratorService;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
