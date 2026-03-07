@@ -2,7 +2,6 @@
 @page "/ViewPosts"
 
 @rendermode @(new InteractiveWebAssemblyRenderMode(false))
-
 @implements IAsyncDisposable
 
 @inject HttpClient Http
@@ -14,12 +13,14 @@
     {
         <a href="@($"/PostDetails/{post.PostId:N}")" data-enhance-nav="false" @onclick="@(e => HandleCardClick(e, post.PostId))" @onclick:preventDefault class="post-card-link">
             <FluentCard AreaRestricted="true" style="width:100%;max-height:350px;padding:16px;overflow:hidden;">
-                <FluentLabel Typo="Typography.Body">@post.AuthorName</FluentLabel>
+                <div style="display:flex; align-items:baseline; gap:6px; font-size:12px;">
+                    <span style="font-weight:700;">@post.AuthorName</span>
+                    <span style="color:var(--neutral-foreground-hint);">•</span>
+                    <span style="color:var(--neutral-foreground-hint);">@ConvertDateToString(post.PostDate)</span>
+                </div>
                 <div class="post-card-title">
                     <FluentLabel Typo="Typography.H3">@post.Title</FluentLabel>
                 </div>
-                <FluentLabel Typo="Typography.Body" Color="Color.Neutral">@ConvertDateToString(post.PostDate)</FluentLabel>
-                <FluentDivider Role="@DividerRole.Separator"/>
                 <div class="post-card-content">
                     @((MarkupString)post.Content)
                 </div>
@@ -99,28 +100,20 @@
     public static string ConvertDateToString(DateTime? date)
     {
         if (!date.HasValue)
-        {
             return "Invalid date";
-        }
 
-        var difference = DateTime.Now - date.Value;
+        var diff = DateTime.Now - date.Value;
 
-        if (difference.TotalDays >= 1)
+        return diff.TotalDays switch
         {
-            return date.Value.ToString();
-        }
-
-        if (difference.TotalHours >= 1)
-        {
-            return $"{(int)difference.TotalHours}h";
-        }
-
-        if (difference.TotalMinutes >= 1)
-        {
-            return $"{(int)difference.TotalMinutes}m";
-        }
-
-        return $"{(int)difference.TotalSeconds}s";
+            >= 365 => $"{(int)(diff.TotalDays / 365)} yr. ago",
+            >= 30 => $"{(int)(diff.TotalDays / 30)} mo. ago",
+            >= 2 => $"{(int)diff.TotalDays} days ago",
+            >= 1 => "1 day ago",
+            _ when diff.TotalHours >= 1 => $"{(int)diff.TotalHours} hr. ago",
+            _ when diff.TotalMinutes >= 1 => $"{(int)diff.TotalMinutes} min ago",
+            _ => "just now"
+        };
     }
 
     private async Task HandleCardClick(MouseEventArgs e, Guid postId)
