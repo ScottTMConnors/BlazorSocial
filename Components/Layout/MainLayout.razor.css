@@ -94,3 +94,14 @@ main {
         right: 0.75rem;
         top: 0.5rem;
     }
+
+.page-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 50vh;
+}
+
+.content:has(> :not(.page-loading)) .page-loading {
+    display: none;
+}

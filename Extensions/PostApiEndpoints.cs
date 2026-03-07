@@ -20,7 +20,7 @@ public static class PostApiEndpoints
                     {
                         await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
-                        await Task.Delay(2000, ct);
+                        //await Task.Delay(2000, ct);
 
                         var posts = await dbContext.Posts
                             .Include(post => post.Author)

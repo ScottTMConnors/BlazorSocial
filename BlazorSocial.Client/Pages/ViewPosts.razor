@@ -21,20 +21,20 @@
                     <FluentLabel Typo="Typography.H3">@post.Title</FluentLabel>
                 </div>
                 <FluentLabel Typo="Typography.Body" Color="Color.Neutral">@ConvertDateToString(post.PostDate)</FluentLabel>
-                <FluentDivider Role="DividerRole.Separator"/>
+                <FluentDivider Role="@DividerRole.Separator"/>
                 <div class="post-card-content">
                     @((MarkupString)post.Content)
                 </div>
             </FluentCard>
         </a>
-        <FluentDivider Role="DividerRole.Separator" style="width: 100%;"/>
+        <FluentDivider Role="@DividerRole.Separator" style="width: 100%;"/>
     }
     @if (!_allLoaded)
     {
         <div @ref="_sentinelRef" style="height:1px;"></div>
+        <FluentProgressRing style="margin: 10px auto;"/>
     }
 </FluentStack>
-<FluentProgressRing style="margin: 10px auto;"></FluentProgressRing>
 
 @code {
 

@@ -2,7 +2,7 @@
 
 <div class="page">
     <div class="sidebar">
-        <NavMenu />
+        <NavMenu/>
     </div>
 
     <main>
@@ -11,15 +11,28 @@
         </div>
 
         <article class="content px-4">
+            <div class="page-loading">
+                <FluentProgressRing style="margin: 10px auto;"/>
+            </div>
             @Body
         </article>
     </main>
 </div>
 
-<FluentDialogProvider @rendermode="@(new InteractiveWebAssemblyRenderMode(false))" />
+<FluentDialogProvider @rendermode="@(new InteractiveWebAssemblyRenderMode(false))"/>
 
 <div id="blazor-error-ui">
     An unhandled error has occurred.
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code{
+
+    protected override async Task OnInitializedAsync()
+    {
+        // MainLayout runs on the server (SSR). WASM page content renders
+        // inside @Body after the WebAssembly runtime loads.
+    }
+
+}
