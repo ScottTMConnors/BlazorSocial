@@ -90,44 +90,7 @@ app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(ViewPostDto).Assembly);
 
-app.MapGet("/api/posts",
-    async (int startIndex, int count, IDbContextFactory<ContentDbContext> dbContextFactory, CancellationToken ct) =>
-    {
-        try
-        {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
-
-            //await Task.Delay(2000, ct);
-
-            var dbPosts = await dbContext.Posts
-                .Include(post => post.Author)
-                .OrderByDescending(post => post.PostDate)
-                .Skip(startIndex)
-                .Take(count)
-                .ToListAsync(ct);
-
-
-            var posts = dbPosts.Select(post => new
-            {
-                PostId = post.Id.Value,
-                post.Title,
-                post.Content,
-                post.PostDate,
-                PostType = post.PostType.Name,
-                AuthorName = post.Author?.UserName ?? "Unknown"
-            });
-
-            return Results.Ok(posts);
-        }
-        catch (OperationCanceledException)
-        {
-            return Results.StatusCode(499);
-        }
-        catch (InvalidOperationException) when (ct.IsCancellationRequested)
-        {
-            return Results.StatusCode(499);
-        }
-    });
+app.MapPostApiEndpoints();
 
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();

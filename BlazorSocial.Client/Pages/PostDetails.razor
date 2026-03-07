@@ -1,0 +1,29 @@
+@page "/PostDetails/{IdParam}"
+
+@rendermode @(new InteractiveWebAssemblyRenderMode(false))
+
+@inject NavigationManager NavigationManager
+
+@if (_isValid)
+{
+    <PostDetailContent PostId="@IdParam" />
+}
+
+@code {
+
+    [Parameter] public string IdParam { get; set; } = "";
+
+    private bool _isValid;
+
+    protected override void OnInitialized()
+    {
+        if (string.IsNullOrEmpty(IdParam) || !Guid.TryParse(IdParam, out _))
+        {
+            NavigationManager.NavigateTo("/ViewPosts");
+            return;
+        }
+
+        _isValid = true;
+    }
+
+}

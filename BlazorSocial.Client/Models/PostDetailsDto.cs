@@ -1,0 +1,16 @@
+namespace BlazorSocial.Client.Models;
+
+public record PostDetailsDto
+{
+    public Guid PostId { get; init; }
+    public string Title { get; init; } = "";
+    public string Content { get; init; } = "";
+    public DateTime PostDate { get; init; }
+    public int ViewCount { get; init; }
+    public int NetVotes { get; init; }
+    public int Upvotes { get; init; }
+    public int Downvotes { get; init; }
+    public bool IsAuthenticated { get; init; }
+    public bool IsUpvote { get; init; }
+    public bool IsVoteActive { get; init; }
+}

@@ -29,6 +29,19 @@
     word-break: break-word;
     white-space: normal;
     overflow-wrap: break-word;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1b;
+    line-height: 22px;
+    margin: 4px 0;
+}
+
+.post-card-title * {
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    color: inherit !important;
+    line-height: inherit !important;
+    margin: 0 !important;
 }
 
 .post-card-content {
@@ -41,4 +54,24 @@
     white-space: normal;
     overflow-wrap: break-word;
     padding-right: 5px;
+}
+
+fluent-card {
+    --card-shadow: none;
+    --card-shadow-size: 0;
+    box-shadow: none !important;
+    border: none !important;
+    outline: none !important;
+    transition: background-color 0.2s ease;
+}
+
+fluent-card:hover {
+    background-color: rgba(200, 200, 200, 0.3) !important;
+}
+
+.post-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    width: 100%;
 }

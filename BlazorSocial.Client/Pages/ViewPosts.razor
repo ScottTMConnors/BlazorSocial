@@ -6,27 +6,27 @@
 @implements IAsyncDisposable
 
 @inject HttpClient Http
-@inject NavigationManager NavigationManager
 @inject IJSRuntime JS
+@inject IDialogService DialogService
 
 <link rel="stylesheet" href="ViewPosts.css" asp-append-version="true"/>
-
-<h3>View All Posts</h3>
 
 <FluentStack Orientation="Orientation.Vertical" VerticalGap="10" style="max-width:1000px; margin:0 auto 0 auto;">
     @foreach (var post in _posts)
     {
-        <FluentCard @onclick="@(() => NavigateToPost(post.PostId))" AreaRestricted="true" style="width:100%;max-height:350px;padding:16px;overflow:hidden;">
-            <FluentLabel Typo="Typography.Body">@post.AuthorName</FluentLabel>
-            <div class="post-card-title">
-                <FluentLabel Typo="Typography.H3">@post.Title</FluentLabel>
-            </div>
-            <FluentLabel Typo="Typography.Body" Color="Color.Neutral">@ConvertDateToString(post.PostDate)</FluentLabel>
-            <FluentDivider Role="DividerRole.Separator"/>
-            <div class="post-card-content">
-                @((MarkupString)post.Content)
-            </div>
-        </FluentCard>
+        <a href="@($"/PostDetails/{post.PostId:N}")" data-enhance-nav="false" @onclick="@(e => HandleCardClick(e, post.PostId))" @onclick:preventDefault class="post-card-link">
+            <FluentCard AreaRestricted="true" style="width:100%;max-height:350px;padding:16px;overflow:hidden;">
+                <FluentLabel Typo="Typography.Body">@post.AuthorName</FluentLabel>
+                <div class="post-card-title">
+                    <FluentLabel Typo="Typography.H3">@post.Title</FluentLabel>
+                </div>
+                <FluentLabel Typo="Typography.Body" Color="Color.Neutral">@ConvertDateToString(post.PostDate)</FluentLabel>
+                <FluentDivider Role="DividerRole.Separator"/>
+                <div class="post-card-content">
+                    @((MarkupString)post.Content)
+                </div>
+            </FluentCard>
+        </a>
         <FluentDivider Role="DividerRole.Separator" style="width: 100%;"/>
     }
     @if (!_allLoaded)
@@ -125,10 +125,25 @@
         return $"{(int)difference.TotalSeconds}s";
     }
 
-    private void NavigateToPost(Guid postId)
+    private async Task HandleCardClick(MouseEventArgs e, Guid postId)
     {
-        var url = $"/PostDetails/{postId:N}";
-        NavigationManager.NavigateTo(url);
+        if (e.CtrlKey || e.MetaKey || e.ShiftKey)
+        {
+            await JS.InvokeVoidAsync("open", $"/PostDetails/{postId:N}", "_blank");
+            return;
+        }
+
+        await DialogService.ShowDialogAsync<PostDetailDialog>(postId.ToString("N"), new DialogParameters
+        {
+            Title = "Post Details",
+            Width = "min(800px, 90vw)",
+            Height = "80vh",
+            PreventDismissOnOverlayClick = false,
+            PreventScroll = true,
+            ShowDismiss = true,
+            PrimaryAction = null,
+            SecondaryAction = null,
+        });
     }
 
     public async ValueTask DisposeAsync()

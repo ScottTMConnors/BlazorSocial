@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using BlazorSocial.Client.Models;
 
 namespace BlazorSocial.Data.Entities;
 
@@ -34,4 +35,21 @@ public class Post : BaseEntity<PostId>
     [NotMapped] public IEnumerable<Vote>? Votes { get; set; }
 
     [NotMapped] public IEnumerable<View>? Views { get; set; }
+}
+
+public static class PostExtensions
+{
+    extension(Post post)
+    {
+        public ViewPostDto ToViewPostDto() =>
+            new()
+            {
+                PostId = post.Id.Value,
+                Title = post.Title,
+                Content = post.Content,
+                PostDate = post.PostDate,
+                PostType = post.PostType.ToString(),
+                AuthorName = post.Author?.UserName ?? "Unknown"
+            };
+    }
 }

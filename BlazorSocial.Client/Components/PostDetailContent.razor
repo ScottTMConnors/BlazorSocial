@@ -1,0 +1,253 @@
+@implements IAsyncDisposable
+
+@inject HttpClient Http
+@inject IJSRuntime JS
+
+@if (_isLoaded)
+{
+    <FluentStack Orientation="Orientation.Vertical" VerticalGap="10">
+        <FluentCard AreaRestricted="true" style="width:100%;padding:16px;">
+            <FluentLabel Typo="Typography.H3">@_post.Title</FluentLabel>
+            <div style="margin-top:8px;">
+                @((MarkupString)_post.Content)
+            </div>
+            <FluentDivider Role="DividerRole.Separator" style="margin:12px 0;"/>
+            <FluentLabel Typo="Typography.Body" Color="Color.Neutral">@_post.PostDate</FluentLabel>
+            <FluentLabel Typo="Typography.Body" Color="Color.Neutral">Views: @_post.ViewCount</FluentLabel>
+            <FluentDivider Role="DividerRole.Separator" style="margin:12px 0;"/>
+            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="4" VerticalAlignment="VerticalAlignment.Center">
+                @if (_post.IsAuthenticated)
+                {
+                    <FluentButton Appearance="Appearance.Lightweight"
+                                  IconStart="@(new Icons.Regular.Size20.ArrowUp())"
+                                  Title="Upvote"
+                                  style="@(_isUpvote && _isVoteActive ? "color:var(--warning);" : "")"
+                                  @onclick="Upvote"/>
+                    <FluentButton Appearance="Appearance.Lightweight"
+                                  IconStart="@(new Icons.Regular.Size20.ArrowDown())"
+                                  Title="Downvote"
+                                  style="@(!_isUpvote && _isVoteActive ? "color:purple;" : "")"
+                                  @onclick="Downvote"/>
+                }
+                <FluentLabel Typo="Typography.Body">Score: @_netVotes | Upvotes: @_upvotes | Downvotes: @_downvotes</FluentLabel>
+            </FluentStack>
+        </FluentCard>
+
+        <FluentDivider Role="DividerRole.Separator" style="width:100%;"/>
+
+        @if (_comments.Count == 0 && _allCommentsLoaded)
+        {
+            <FluentLabel Typo="Typography.Body">No comments yet.</FluentLabel>
+        }
+        else
+        {
+            @foreach (var comment in _comments)
+            {
+                <FluentCard AreaRestricted="true" style="width:100%;padding:16px;">
+                    <FluentLabel Typo="Typography.Body" Weight="FontWeight.Bold">@comment.AuthorName</FluentLabel>
+                    <FluentLabel Typo="Typography.Body" Color="Color.Neutral">@ConvertDateToString(comment.PostDate)</FluentLabel>
+                    <FluentDivider Role="DividerRole.Separator" style="margin:8px 0;"/>
+                    <div>
+                        @((MarkupString)comment.Content)
+                    </div>
+                </FluentCard>
+            }
+        }
+        @if (!_allCommentsLoaded)
+        {
+            <div @ref="_sentinelRef" style="height:1px;"></div>
+            <FluentProgressRing style="margin:10px auto;"/>
+        }
+    </FluentStack>
+}
+else if (_loadFailed)
+{
+    <FluentLabel Typo="Typography.Body">Post not found.</FluentLabel>
+}
+else
+{
+    <FluentProgressRing style="margin: 10px auto;"/>
+}
+
+@code {
+
+    private const int CommentPageSize = 10;
+
+    [Parameter] public string PostId { get; set; } = "";
+
+    private PostDetailsDto _post = default!;
+    private bool _isUpvote;
+    private bool _isVoteActive;
+    private int _netVotes;
+    private int _upvotes;
+    private int _downvotes;
+    private bool _isLoaded;
+    private bool _loadFailed;
+
+    private readonly List<CommentDto> _comments = [];
+    private ElementReference _sentinelRef;
+    private IJSObjectReference? _module;
+    private DotNetObjectReference<PostDetailContent>? _selfRef;
+    private bool _loadingComments;
+    private bool _allCommentsLoaded;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(PostId) || !Guid.TryParse(PostId, out _))
+        {
+            _loadFailed = true;
+            return;
+        }
+
+        var post = await Http.GetFromJsonAsync<PostDetailsDto>($"api/posts/{PostId}");
+
+        if (post is null)
+        {
+            _loadFailed = true;
+            return;
+        }
+
+        _post = post;
+        _isUpvote = post.IsUpvote;
+        _isVoteActive = post.IsVoteActive;
+        _netVotes = post.NetVotes;
+        _upvotes = post.Upvotes;
+        _downvotes = post.Downvotes;
+        _isLoaded = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && _isLoaded)
+        {
+            _ = Http.PostAsync($"api/posts/{PostId}/view", null);
+
+            await LoadMoreComments();
+            StateHasChanged();
+
+            _module = await JS.InvokeAsync<IJSObjectReference>(
+                "import", "./js/ViewPosts.js");
+            _selfRef = DotNetObjectReference.Create(this);
+
+            if (!_allCommentsLoaded)
+            {
+                await _module.InvokeVoidAsync("observe", _sentinelRef, _selfRef);
+            }
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnSentinelVisible()
+    {
+        if (_loadingComments || _allCommentsLoaded) return;
+        await LoadMoreComments();
+        StateHasChanged();
+
+        if (!_allCommentsLoaded && _module is not null)
+        {
+            await _module.InvokeVoidAsync("observe", _sentinelRef, _selfRef);
+        }
+    }
+
+    private async Task LoadMoreComments()
+    {
+        _loadingComments = true;
+        try
+        {
+            var newComments = await Http.GetFromJsonAsync<List<CommentDto>>(
+                $"api/posts/{PostId}/comments?startIndex={_comments.Count}&count={CommentPageSize}") ?? [];
+
+            _comments.AddRange(newComments);
+
+            if (newComments.Count < CommentPageSize)
+            {
+                _allCommentsLoaded = true;
+            }
+        }
+        catch
+        {
+            // Swallow – the user can retry by scrolling again
+        }
+        finally
+        {
+            _loadingComments = false;
+        }
+    }
+
+    public static string ConvertDateToString(DateTime? date)
+    {
+        if (!date.HasValue)
+        {
+            return "Invalid date";
+        }
+
+        var difference = DateTime.Now - date.Value;
+
+        if (difference.TotalDays >= 1)
+        {
+            return date.Value.ToString();
+        }
+
+        if (difference.TotalHours >= 1)
+        {
+            return $"{(int)difference.TotalHours}h";
+        }
+
+        if (difference.TotalMinutes >= 1)
+        {
+            return $"{(int)difference.TotalMinutes}m";
+        }
+
+        return $"{(int)difference.TotalSeconds}s";
+    }
+
+    private async Task Upvote()
+    {
+        await UpdateVote(true);
+    }
+
+    private async Task Downvote()
+    {
+        await UpdateVote(false);
+    }
+
+    private async Task UpdateVote(bool isUpvote)
+    {
+        if (_isUpvote == isUpvote && _isVoteActive)
+        {
+            _isVoteActive = false;
+        }
+        else
+        {
+            _isVoteActive = true;
+            _isUpvote = isUpvote;
+        }
+
+        var response = await Http.PostAsJsonAsync($"api/posts/{PostId}/vote", new VoteRequestDto { IsUpvote = isUpvote });
+
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<VoteResponseDto>();
+            if (result is not null)
+            {
+                _isUpvote = result.IsUpvote;
+                _isVoteActive = result.IsActive;
+                _netVotes = result.NetVotes;
+                _upvotes = result.Upvotes;
+                _downvotes = result.Downvotes;
+            }
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is not null)
+        {
+            await _module.InvokeVoidAsync("disconnect");
+            await _module.DisposeAsync();
+        }
+
+        _selfRef?.Dispose();
+    }
+
+}
