@@ -2,8 +2,8 @@
 @page "/ViewPosts"
 
 @rendermode @(new InteractiveWebAssemblyRenderMode(false))
+@using BlazorSocial.Client.Components.Shared
 @using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
-@using FilledIcons = Microsoft.FluentUI.AspNetCore.Components.Icons.Filled
 @implements IAsyncDisposable
 
 @inject HttpClient Http
@@ -40,29 +40,7 @@
                     @((MarkupString)post.Content)
                 </div>
                 <div class="post-card-actions">
-                    <div class="post-action-pill glass-pill @(post.CurrentUserVote == 1 ? "glow-up" : post.CurrentUserVote == -1 ? "glow-down" : "")">
-                        <span class="vote-btn vote-up @(post.CurrentUserVote == 1 ? "voted" : "")" @onclick="() => VotePost(post, true)" @onclick:stopPropagation @onclick:preventDefault>
-                            @if (post.CurrentUserVote == 1)
-                            {
-                                <FluentIcon Value="@(new FilledIcons.Size20.ArrowOutlineUpRight())"/>
-                            }
-                            else
-                            {
-                                <FluentIcon Value="@(new Size20.ArrowOutlineUpRight())"/>
-                            }
-                        </span>
-                        <span class="post-action-count">@post.Score</span>
-                        <span class="vote-btn vote-down @(post.CurrentUserVote == -1 ? "voted" : "")" @onclick="() => VotePost(post, false)" @onclick:stopPropagation @onclick:preventDefault>
-                            @if (post.CurrentUserVote == -1)
-                            {
-                                <FluentIcon Value="@(new FilledIcons.Size20.ArrowOutlineDownLeft())"/>
-                            }
-                            else
-                            {
-                                <FluentIcon Value="@(new Size20.ArrowOutlineDownLeft())"/>
-                            }
-                        </span>
-                    </div>
+                    <VoteDisplay @bind-CurrentUserVote="@post.CurrentUserVote" @bind-Score="@post.Score" OnVote="@(isUpvote => VotePost(post, isUpvote))"/>
                     <div class="post-action-pill glass-pill">
                         <FluentIcon Value="@(new Size20.Comment())" Color="@Color.Neutral"/>
                         <span class="post-action-count">@post.CommentCount</span>
@@ -160,39 +138,10 @@
         };
     }
 
-    private async Task VotePost(ViewPostDto post, bool isUpvote)
+    private Task VotePost(ViewPostDto post, bool isUpvote)
     {
-        if (isUpvote)
-        {
-            if (post.CurrentUserVote == 1)
-            {
-                // Remove upvote
-                post.Score -= 1;
-                post.CurrentUserVote = 0;
-            }
-            else
-            {
-                post.Score += 1;
-                post.CurrentUserVote = 1;
-            }
-        }
-        else
-        {
-            if (post.CurrentUserVote == -1)
-            {
-                // Remove downvote
-                post.Score += 1;
-                post.CurrentUserVote = 0;
-            }
-            else
-            {
-                post.Score -= 1;
-                post.CurrentUserVote = -1;
-            }
-        }
-
-        await Http.PostAsJsonAsync($"api/posts/{post.PostId:N}/vote", new VoteRequestDto { IsUpvote = isUpvote });
         StateHasChanged();
+        return Http.PostAsJsonAsync($"api/posts/{post.PostId:N}/vote", new VoteRequestDto { IsUpvote = isUpvote });
     }
 
     private async Task HandleCardClick(MouseEventArgs e, Guid postId)
