@@ -29,13 +29,15 @@ public class Post : BaseEntity<PostId>
     public PostMetadata PostMetadata { get; set; }
 
     public PostType PostType { get; set; }
+
+    public ICollection<Vote> Votes { get; set; } = new List<Vote>();
 }
 
 public static class PostExtensions
 {
     extension(IQueryable<Post> query)
     {
-        public IQueryable<ViewPostDto> ToViewPostDtos() =>
+        public IQueryable<ViewPostDto> ToViewPostDtos(UserId? currentUserId = null) =>
             query.Select(post => new ViewPostDto
             {
                 PostId = post.Id.Value,
@@ -45,7 +47,13 @@ public static class PostExtensions
                 PostType = post.PostType.ToString(),
                 AuthorName = post.Author != null ? post.Author!.UserName ?? "Unknown" : "Unknown",
                 CommentCount = post.PostMetadata.CommentCount,
-                Score = post.PostMetadata.NetVotes
+                Score = post.PostMetadata.NetVotes,
+                CurrentUserVote = currentUserId == null
+                    ? 0
+                    : post.Votes
+                        .Where(v => v.UserId == currentUserId)
+                        .Select(v => v.IsUpvote ? 1 : -1)
+                        .FirstOrDefault()
             });
     }
 }

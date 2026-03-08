@@ -2,11 +2,26 @@
 @page "/ViewPosts"
 
 @rendermode @(new InteractiveWebAssemblyRenderMode(false))
+@using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
+@using FilledIcons = Microsoft.FluentUI.AspNetCore.Components.Icons.Filled
 @implements IAsyncDisposable
 
 @inject HttpClient Http
 @inject IJSRuntime JS
 @inject IDialogService DialogService
+
+<svg style="position:absolute;width:0;height:0;" aria-hidden="true">
+    <defs>
+        <linearGradient id="upvote-gradient" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="#FF4500"/>
+            <stop offset="100%" stop-color="#DC1E00"/>
+        </linearGradient>
+        <linearGradient id="downvote-gradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#5C6BC0"/>
+            <stop offset="100%" stop-color="#6E14AA"/>
+        </linearGradient>
+    </defs>
+</svg>
 
 <FluentStack Orientation="Orientation.Vertical" VerticalGap="10" style="max-width:1000px; margin:0 auto 0 auto;">
     @foreach (var post in _posts)
@@ -23,6 +38,35 @@
                 </div>
                 <div class="post-card-content">
                     @((MarkupString)post.Content)
+                </div>
+                <div class="post-card-actions">
+                    <div class="post-action-pill glass-pill @(post.CurrentUserVote == 1 ? "glow-up" : post.CurrentUserVote == -1 ? "glow-down" : "")">
+                        <span class="vote-btn vote-up @(post.CurrentUserVote == 1 ? "voted" : "")" @onclick="() => VotePost(post, true)" @onclick:stopPropagation @onclick:preventDefault>
+                            @if (post.CurrentUserVote == 1)
+                            {
+                                <FluentIcon Value="@(new FilledIcons.Size20.ArrowOutlineUpRight())"/>
+                            }
+                            else
+                            {
+                                <FluentIcon Value="@(new Size20.ArrowOutlineUpRight())"/>
+                            }
+                        </span>
+                        <span class="post-action-count">@post.Score</span>
+                        <span class="vote-btn vote-down @(post.CurrentUserVote == -1 ? "voted" : "")" @onclick="() => VotePost(post, false)" @onclick:stopPropagation @onclick:preventDefault>
+                            @if (post.CurrentUserVote == -1)
+                            {
+                                <FluentIcon Value="@(new FilledIcons.Size20.ArrowOutlineDownLeft())"/>
+                            }
+                            else
+                            {
+                                <FluentIcon Value="@(new Size20.ArrowOutlineDownLeft())"/>
+                            }
+                        </span>
+                    </div>
+                    <div class="post-action-pill glass-pill">
+                        <FluentIcon Value="@(new Size20.Comment())" Color="@Color.Neutral"/>
+                        <span class="post-action-count">@post.CommentCount</span>
+                    </div>
                 </div>
             </FluentCard>
         </a>
@@ -114,6 +158,41 @@
             _ when diff.TotalMinutes >= 1 => $"{(int)diff.TotalMinutes} min ago",
             _ => "just now"
         };
+    }
+
+    private async Task VotePost(ViewPostDto post, bool isUpvote)
+    {
+        if (isUpvote)
+        {
+            if (post.CurrentUserVote == 1)
+            {
+                // Remove upvote
+                post.Score -= 1;
+                post.CurrentUserVote = 0;
+            }
+            else
+            {
+                post.Score += 1;
+                post.CurrentUserVote = 1;
+            }
+        }
+        else
+        {
+            if (post.CurrentUserVote == -1)
+            {
+                // Remove downvote
+                post.Score += 1;
+                post.CurrentUserVote = 0;
+            }
+            else
+            {
+                post.Score -= 1;
+                post.CurrentUserVote = -1;
+            }
+        }
+
+        await Http.PostAsJsonAsync($"api/posts/{post.PostId:N}/vote", new VoteRequestDto { IsUpvote = isUpvote });
+        StateHasChanged();
     }
 
     private async Task HandleCardClick(MouseEventArgs e, Guid postId)

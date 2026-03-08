@@ -352,6 +352,242 @@ main {
     color: #1a1a1b;
 }
 
+.post-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.post-action-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 9999px;
+    padding: 0 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #576f76;
+    line-height: 1;
+    cursor: pointer;
+    height: 32px;
+    position: relative;
+}
+
+.glass-pill {
+    background:
+        /* refraction band — the bright caustic that sits ~30% down the curved surface */
+        radial-gradient(
+            ellipse 100% 60% at 50% 25%,
+            rgba(255, 255, 255, 0.75) 0%,
+            rgba(255, 255, 255, 0.3) 50%,
+            transparent 100%
+        ),
+        /* bottom refraction edge — light bending through and pooling at the base */
+        linear-gradient(
+            0deg,
+            rgba(255, 255, 255, 0.35) 0%,
+            rgba(255, 255, 255, 0.12) 15%,
+            transparent 35%
+        ),
+        /* base glass body — very subtle translucent fill */
+        linear-gradient(
+            180deg,
+            rgba(245, 248, 255, 0.18) 0%,
+            rgba(235, 238, 245, 0.12) 100%
+        );
+    backdrop-filter: blur(28px) saturate(2.0) brightness(1.1) contrast(1.05);
+    -webkit-backdrop-filter: blur(28px) saturate(2.0) brightness(1.1) contrast(1.05);
+    border: 0.5px solid rgba(255, 255, 255, 0.55);
+    box-shadow:
+        /* top rim — crisp specular edge */
+        inset 0 1px 0 rgba(255, 255, 255, 0.95),
+        /* upper refraction glow — diffused light inside the top half */
+        inset 0 6px 12px -4px rgba(255, 255, 255, 0.5),
+        /* mid-body dark band — the shadow zone below the highlight on curved glass */
+        inset 0 -6px 10px -6px rgba(0, 0, 0, 0.08),
+        /* bottom rim — secondary refraction catch */
+        inset 0 -1px 0 rgba(255, 255, 255, 0.3),
+        /* drop shadow */
+        0 1px 3px rgba(0, 0, 0, 0.07),
+        0 3px 10px rgba(0, 0, 0, 0.04);
+    transition:
+        background 0.3s ease,
+        box-shadow 0.3s ease,
+        border-color 0.3s ease;
+}
+
+.glass-pill:hover {
+    border-color: rgba(255, 255, 255, 0.7);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 1),
+        inset 0 6px 12px -4px rgba(255, 255, 255, 0.55),
+        inset 0 -6px 10px -6px rgba(0, 0, 0, 0.08),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.35),
+        0 2px 5px rgba(0, 0, 0, 0.09),
+        0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.glass-pill.glow-up {
+    background:
+        /* refraction band — tinted warm, offset to the left origin */
+        radial-gradient(
+            ellipse 90% 55% at 35% 22%,
+            rgba(255, 255, 255, 0.7) 0%,
+            rgba(255, 220, 200, 0.3) 50%,
+            transparent 100%
+        ),
+        /* bottom refraction — warm red light pooling at base */
+        linear-gradient(
+            0deg,
+            rgba(255, 100, 60, 0.3) 0%,
+            rgba(255, 70, 30, 0.12) 18%,
+            transparent 38%
+        ),
+        /* horizontal color shift through the glass body */
+        linear-gradient(
+            90deg,
+            rgba(190, 15, 0, 0.4) 0%,
+            rgba(220, 40, 5, 0.22) 50%,
+            rgba(240, 60, 15, 0.1) 100%
+        ),
+        /* the radiant color flooding the glass volume */
+        radial-gradient(
+            ellipse 200% 350% at 6% 50%,
+            rgba(190, 10, 0, 0.97) 0%,
+            rgba(210, 30, 0, 0.82) 18%,
+            rgba(230, 45, 5, 0.65) 36%,
+            rgba(240, 60, 10, 0.5) 54%,
+            rgba(245, 75, 20, 0.38) 72%,
+            rgba(250, 90, 30, 0.25) 100%
+        );
+    border-color: rgba(200, 35, 5, 0.6);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.65),
+        inset 0 6px 12px -4px rgba(255, 170, 160, 0.35),
+        inset 0 -6px 10px -6px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 rgba(255, 150, 130, 0.25),
+        /* outer glow — strong colored halo */
+        0 0 12px rgba(200, 30, 0, 0.55),
+        0 0 30px rgba(185, 15, 0, 0.3),
+        0 0 50px rgba(175, 10, 0, 0.12),
+        0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.glass-pill.glow-down {
+    background:
+        /* refraction band — tinted cool, offset to the right origin */
+        radial-gradient(
+            ellipse 90% 55% at 65% 22%,
+            rgba(255, 255, 255, 0.7) 0%,
+            rgba(200, 195, 255, 0.3) 50%,
+            transparent 100%
+        ),
+        /* bottom refraction — blue-violet light pooling at base */
+        linear-gradient(
+            0deg,
+            rgba(80, 100, 230, 0.3) 0%,
+            rgba(95, 65, 210, 0.12) 18%,
+            transparent 38%
+        ),
+        /* horizontal color shift through the glass body */
+        linear-gradient(
+            270deg,
+            rgba(95, 10, 155, 0.4) 0%,
+            rgba(60, 50, 195, 0.22) 50%,
+            rgba(40, 85, 220, 0.1) 100%
+        ),
+        /* the radiant color flooding the glass volume */
+        radial-gradient(
+            ellipse 200% 350% at 94% 50%,
+            rgba(95, 5, 150, 0.97) 0%,
+            rgba(75, 25, 175, 0.82) 18%,
+            rgba(60, 45, 195, 0.65) 36%,
+            rgba(48, 65, 210, 0.5) 54%,
+            rgba(40, 85, 220, 0.38) 72%,
+            rgba(35, 100, 228, 0.25) 100%
+        );
+    border-color: rgba(70, 30, 170, 0.6);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.65),
+        inset 0 6px 12px -4px rgba(150, 155, 255, 0.35),
+        inset 0 -6px 10px -6px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 rgba(130, 140, 255, 0.25),
+        /* outer glow — strong colored halo */
+        0 0 12px rgba(80, 30, 175, 0.55),
+        0 0 30px rgba(65, 20, 160, 0.3),
+        0 0 50px rgba(50, 15, 145, 0.12),
+        0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.post-action-count {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1a1a1b;
+    transition: color 0.3s ease;
+}
+
+.glass-pill.glow-up .post-action-count,
+.glass-pill.glow-down .post-action-count {
+    color: #fff;
+}
+
+.glass-pill.glow-up .vote-down svg path,
+.glass-pill.glow-down .vote-up svg path {
+    fill: rgba(255, 255, 255, 0.9);
+}
+
+.vote-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    width: 32px;
+    height: 32px;
+    margin: 0 -6px;
+    flex-shrink: 0;
+    transition: background-color 0.15s ease;
+    cursor: pointer;
+}
+
+.vote-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.vote-btn svg path {
+    fill: #576f76;
+    transition: fill 0.15s ease;
+}
+
+.vote-btn:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.vote-up:hover svg path {
+    fill: url(#upvote-gradient);
+}
+
+.vote-down:hover svg path {
+    fill: url(#downvote-gradient);
+}
+
+.vote-up.voted svg path {
+    fill: #fff;
+}
+
+.vote-down.voted svg path {
+    fill: #fff;
+}
+
+.vote-up svg {
+    transform: rotate(-45deg);
+}
+
+.vote-down svg {
+    transform: rotate(-45deg);
+}
+
 fluent-card {
     --card-shadow: none;
     --card-shadow-size: 0;

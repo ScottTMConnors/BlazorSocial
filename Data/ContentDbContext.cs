@@ -1,4 +1,4 @@
-﻿using BlazorSocial.Data.Entities;
+using BlazorSocial.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -30,7 +30,7 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options)
         builder.Entity<Vote>(entity =>
         {
             entity.HasOne(v => v.Post)
-                .WithMany()
+                .WithMany(p => p.Votes)
                 .HasForeignKey(v => v.PostId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -39,8 +39,8 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options)
                 .HasForeignKey(v => v.UserId)
                 .OnDelete(DeleteBehavior.ClientCascade);
 
-            entity.HasIndex(v => new { v.PostId, v.IsActive })
-                .HasDatabaseName("IX_Votes_PostId_IsActive");
+            entity.HasIndex(v => new { v.PostId, v.IsActive, v.IsUpvote })
+                .HasDatabaseName("IX_Votes_PostId_IsActive_IsUpvote");
         });
 
         builder.Entity<View>(entity =>

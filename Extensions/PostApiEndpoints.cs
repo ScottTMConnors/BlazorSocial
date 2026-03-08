@@ -13,20 +13,21 @@ public static class PostApiEndpoints
         public IEndpointRouteBuilder MapPostApiEndpoints()
         {
             endpoints.MapGet("/api/posts",
-                async (int startIndex, int count, IDbContextFactory<ContentDbContext> dbContextFactory,
+                async (int startIndex, int count, HttpContext httpContext,
+                    IDbContextFactory<ContentDbContext> dbContextFactory,
                     CancellationToken ct) =>
                 {
                     try
                     {
                         await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
-                        //await Task.Delay(2000, ct);
+                        var userId = httpContext.GetCurrentUserId();
 
                         var posts = await dbContext.Posts
                             .OrderByDescending(post => post.PostDate)
                             .Skip(startIndex)
                             .Take(count)
-                            .ToViewPostDtos()
+                            .ToViewPostDtos(userId)
                             .ToListAsync(ct);
 
                         return Results.Ok(posts);
@@ -57,24 +58,19 @@ public static class PostApiEndpoints
                         return Results.NotFound();
                     }
 
-                    var user = httpContext.User;
-                    var isAuthenticated = user.Identity?.IsAuthenticated ?? false;
+                    var userId = httpContext.GetCurrentUserId();
+                    var isAuthenticated = userId is not null;
                     var isUpvote = false;
                     var isVoteActive = false;
 
                     if (isAuthenticated)
                     {
-                        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                        if (userIdClaim is not null)
+                        var vote = await dbContext.Votes
+                            .FirstOrDefaultAsync(v => v.UserId == userId && v.PostId == postId, ct);
+                        if (vote is not null)
                         {
-                            var userId = UserId.Parse(userIdClaim);
-                            var vote = await dbContext.Votes
-                                .FirstOrDefaultAsync(v => v.UserId == userId && v.PostId == postId, ct);
-                            if (vote is not null)
-                            {
-                                isUpvote = vote.IsUpvote;
-                                isVoteActive = vote.IsActive;
-                            }
+                            isUpvote = vote.IsUpvote;
+                            isVoteActive = vote.IsActive;
                         }
                     }
 
