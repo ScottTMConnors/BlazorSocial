@@ -417,8 +417,31 @@ main {
         border-color 0.3s ease;
 }
 
-.glass-pill:hover {
+.glass-pill:not(.glow-up):not(.glow-down):hover {
     border-color: rgba(255, 255, 255, 0.7);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(160, 160, 160, 0.13) 0%,
+            rgba(140, 140, 140, 0.09) 100%
+        ),
+        radial-gradient(
+            ellipse 100% 60% at 50% 25%,
+            rgba(255, 255, 255, 0.75) 0%,
+            rgba(255, 255, 255, 0.3) 50%,
+            transparent 100%
+        ),
+        linear-gradient(
+            0deg,
+            rgba(255, 255, 255, 0.35) 0%,
+            rgba(255, 255, 255, 0.12) 15%,
+            transparent 35%
+        ),
+        linear-gradient(
+            180deg,
+            rgba(245, 248, 255, 0.18) 0%,
+            rgba(235, 238, 245, 0.12) 100%
+        );
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 1),
         inset 0 6px 12px -4px rgba(255, 255, 255, 0.55),
@@ -474,6 +497,56 @@ main {
         0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
+/* Dim the upvote glow when hovering the already-voted upvote button */
+.glass-pill.glow-up:has(.vote-up:hover) {
+    background:
+        /* dark tint on the glowing side */
+        radial-gradient(
+            ellipse 140% 300% at 6% 50%,
+            rgba(0, 0, 0, 0.18) 0%,
+            rgba(0, 0, 0, 0.08) 40%,
+            transparent 70%
+        ),
+        /* base layers unchanged */
+        radial-gradient(
+            ellipse 90% 55% at 35% 22%,
+            rgba(255, 255, 255, 0.7) 0%,
+            rgba(255, 220, 200, 0.3) 50%,
+            transparent 100%
+        ),
+        linear-gradient(
+            0deg,
+            rgba(255, 100, 60, 0.3) 0%,
+            rgba(255, 70, 30, 0.12) 18%,
+            transparent 38%
+        ),
+        linear-gradient(
+            90deg,
+            rgba(190, 15, 0, 0.4) 0%,
+            rgba(220, 40, 5, 0.22) 50%,
+            rgba(240, 60, 15, 0.1) 100%
+        ),
+        radial-gradient(
+            ellipse 200% 350% at 6% 50%,
+            rgba(190, 10, 0, 0.97) 0%,
+            rgba(210, 30, 0, 0.82) 18%,
+            rgba(230, 45, 5, 0.65) 36%,
+            rgba(240, 60, 10, 0.5) 54%,
+            rgba(245, 75, 20, 0.38) 72%,
+            rgba(250, 90, 30, 0.25) 100%
+        );
+    border-color: rgba(200, 35, 5, 0.5);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.65),
+        inset 0 6px 12px -4px rgba(255, 170, 160, 0.35),
+        inset 0 -6px 10px -6px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 rgba(255, 150, 130, 0.25),
+        0 0 8px rgba(200, 30, 0, 0.4),
+        0 0 20px rgba(185, 15, 0, 0.2),
+        0 0 36px rgba(175, 10, 0, 0.08),
+        0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
 .glass-pill.glow-down {
     background:
         /* refraction band — tinted cool, offset to the right origin */
@@ -520,6 +593,56 @@ main {
         0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
+/* Dim the downvote glow when hovering the already-voted downvote button */
+.glass-pill.glow-down:has(.vote-down:hover) {
+    background:
+        /* dark tint on the glowing side */
+        radial-gradient(
+            ellipse 140% 300% at 94% 50%,
+            rgba(0, 0, 0, 0.18) 0%,
+            rgba(0, 0, 0, 0.08) 40%,
+            transparent 70%
+        ),
+        /* base layers unchanged */
+        radial-gradient(
+            ellipse 90% 55% at 65% 22%,
+            rgba(255, 255, 255, 0.7) 0%,
+            rgba(200, 195, 255, 0.3) 50%,
+            transparent 100%
+        ),
+        linear-gradient(
+            0deg,
+            rgba(80, 100, 230, 0.3) 0%,
+            rgba(95, 65, 210, 0.12) 18%,
+            transparent 38%
+        ),
+        linear-gradient(
+            270deg,
+            rgba(95, 10, 155, 0.4) 0%,
+            rgba(60, 50, 195, 0.22) 50%,
+            rgba(40, 85, 220, 0.1) 100%
+        ),
+        radial-gradient(
+            ellipse 200% 350% at 94% 50%,
+            rgba(95, 5, 150, 0.97) 0%,
+            rgba(75, 25, 175, 0.82) 18%,
+            rgba(60, 45, 195, 0.65) 36%,
+            rgba(48, 65, 210, 0.5) 54%,
+            rgba(40, 85, 220, 0.38) 72%,
+            rgba(35, 100, 228, 0.25) 100%
+        );
+    border-color: rgba(70, 30, 170, 0.5);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.65),
+        inset 0 6px 12px -4px rgba(150, 155, 255, 0.35),
+        inset 0 -6px 10px -6px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 rgba(130, 140, 255, 0.25),
+        0 0 8px rgba(80, 30, 175, 0.4),
+        0 0 20px rgba(65, 20, 160, 0.2),
+        0 0 36px rgba(50, 15, 145, 0.08),
+        0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
 .post-action-count {
     font-size: 12px;
     font-weight: 700;
@@ -546,7 +669,7 @@ main {
     height: 32px;
     margin: 0 -6px;
     flex-shrink: 0;
-    transition: background-color 0.15s ease;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
 }
 
@@ -561,7 +684,115 @@ main {
 }
 
 .vote-btn:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Suppress hover ring when pill is glowing */
+.glass-pill.glow-up .vote-btn:hover,
+.glass-pill.glow-down .vote-btn:hover {
+    background: transparent;
+    box-shadow: none;
+}
+
+/* Competing glow inside the pill: hovering the opposite vote button morphs the pill background */
+.glass-pill.glow-up:has(.vote-down:hover) {
+    background:
+        /* competing purple flooding in from the right */
+        radial-gradient(
+            ellipse 120% 300% at 95% 50%,
+            rgba(110, 20, 170, 0.7) 0%,
+            rgba(92, 107, 192, 0.45) 25%,
+            rgba(80, 60, 200, 0.2) 50%,
+            transparent 75%
+        ),
+        /* the original upvote warm glass body */
+        radial-gradient(
+            ellipse 90% 55% at 35% 22%,
+            rgba(255, 255, 255, 0.7) 0%,
+            rgba(255, 220, 200, 0.3) 50%,
+            transparent 100%
+        ),
+        linear-gradient(
+            0deg,
+            rgba(255, 100, 60, 0.3) 0%,
+            rgba(255, 70, 30, 0.12) 18%,
+            transparent 38%
+        ),
+        linear-gradient(
+            90deg,
+            rgba(190, 15, 0, 0.4) 0%,
+            rgba(220, 40, 5, 0.22) 50%,
+            rgba(240, 60, 15, 0.1) 100%
+        ),
+        radial-gradient(
+            ellipse 200% 350% at 6% 50%,
+            rgba(190, 10, 0, 0.97) 0%,
+            rgba(210, 30, 0, 0.82) 18%,
+            rgba(230, 45, 5, 0.65) 36%,
+            rgba(240, 60, 10, 0.5) 54%,
+            rgba(245, 75, 20, 0.38) 72%,
+            rgba(250, 90, 30, 0.25) 100%
+        );
+    border-color: rgba(140, 30, 100, 0.65);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.65),
+        inset 0 6px 12px -4px rgba(200, 160, 220, 0.4),
+        inset 0 -6px 10px -6px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 rgba(180, 140, 255, 0.25),
+        0 0 14px rgba(200, 30, 0, 0.45),
+        0 0 14px rgba(80, 30, 175, 0.45),
+        0 0 32px rgba(110, 20, 130, 0.25),
+        0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.glass-pill.glow-down:has(.vote-up:hover) {
+    background:
+        /* competing orange/red flooding in from the left */
+        radial-gradient(
+            ellipse 120% 300% at 5% 50%,
+            rgba(220, 50, 0, 0.7) 0%,
+            rgba(255, 69, 0, 0.45) 25%,
+            rgba(240, 80, 20, 0.2) 50%,
+            transparent 75%
+        ),
+        /* the original downvote cool glass body */
+        radial-gradient(
+            ellipse 90% 55% at 65% 22%,
+            rgba(255, 255, 255, 0.7) 0%,
+            rgba(200, 195, 255, 0.3) 50%,
+            transparent 100%
+        ),
+        linear-gradient(
+            0deg,
+            rgba(80, 100, 230, 0.3) 0%,
+            rgba(95, 65, 210, 0.12) 18%,
+            transparent 38%
+        ),
+        linear-gradient(
+            270deg,
+            rgba(95, 10, 155, 0.4) 0%,
+            rgba(60, 50, 195, 0.22) 50%,
+            rgba(40, 85, 220, 0.1) 100%
+        ),
+        radial-gradient(
+            ellipse 200% 350% at 94% 50%,
+            rgba(95, 5, 150, 0.97) 0%,
+            rgba(75, 25, 175, 0.82) 18%,
+            rgba(60, 45, 195, 0.65) 36%,
+            rgba(48, 65, 210, 0.5) 54%,
+            rgba(40, 85, 220, 0.38) 72%,
+            rgba(35, 100, 228, 0.25) 100%
+        );
+    border-color: rgba(150, 40, 80, 0.65);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.65),
+        inset 0 6px 12px -4px rgba(255, 180, 160, 0.4),
+        inset 0 -6px 10px -6px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 rgba(255, 150, 130, 0.25),
+        0 0 14px rgba(80, 30, 175, 0.45),
+        0 0 14px rgba(220, 50, 0, 0.45),
+        0 0 32px rgba(170, 40, 60, 0.25),
+        0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .vote-up:hover svg path {
