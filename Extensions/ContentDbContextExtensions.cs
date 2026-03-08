@@ -20,69 +20,60 @@ public static class ContentDbContextExtensions
     {
         public async Task RecordUserViewAsync(PostId postId, string? ipAddress, UserId? userId)
         {
-            var metadata = await dbContext.PostMetadatas.FirstOrDefaultAsync(m => m.PostId == postId);
-            if (metadata != null)
-            {
-                metadata.ViewCount += 1;
-                dbContext.PostMetadatas.Update(metadata);
-            }
-            else
-            {
-                metadata = new PostMetadata(postId)
-                {
-                    ViewCount = 1
-                };
-                dbContext.PostMetadatas.Add(metadata);
-            }
-
             dbContext.Views.Add(new View
             {
                 PostId = postId,
                 UserId = userId,
                 ViewDateTime = DateTime.Now
             });
-
             await dbContext.SaveChangesAsync();
+
+            var updated = await dbContext.PostMetadatas
+                .Where(m => m.PostId == postId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(m => m.ViewCount, m => m.ViewCount + 1));
+
+            if (updated == 0)
+            {
+                dbContext.PostMetadatas.Add(new PostMetadata(postId) { ViewCount = 1 });
+                await dbContext.SaveChangesAsync();
+            }
+        }
+
+        public async Task UpdateVoteMetadataAsync(PostId postId)
+        {
+            await dbContext.PostMetadatas
+                .Where(m => m.PostId == postId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(m => m.Upvotes,
+                        dbContext.Votes.Count(v => v.PostId == postId && v.IsActive && v.IsUpvote))
+                    .SetProperty(m => m.Downvotes,
+                        dbContext.Votes.Count(v => v.PostId == postId && v.IsActive && !v.IsUpvote))
+                    .SetProperty(m => m.TotalVotes,
+                        dbContext.Votes.Count(v => v.PostId == postId && v.IsActive))
+                    .SetProperty(m => m.NetVotes,
+                        dbContext.Votes.Where(v => v.PostId == postId && v.IsActive)
+                            .Sum(v => v.IsUpvote ? 1 : -1)));
         }
 
         public async Task UpdatePostMetadataAsync()
         {
-            var voteStats = await dbContext.Votes
-                .Where(v => v.IsActive)
-                .GroupBy(v => v.PostId)
-                .Select(g => new
-                {
-                    PostId = g.Key,
-                    Upvotes = g.Count(v => v.IsUpvote),
-                    Downvotes = g.Count(v => !v.IsUpvote),
-                    TotalVotes = g.Count()
-                })
-                .ToDictionaryAsync(v => v.PostId);
+            var postIds = await dbContext.PostMetadatas
+                .Select(m => m.PostId)
+                .ToListAsync();
 
-            var viewCounts = await dbContext.Views
-                .GroupBy(v => v.PostId)
-                .Select(g => new
-                {
-                    PostId = g.Key,
-                    ViewCount = g.Count()
-                })
-                .ToDictionaryAsync(v => v.PostId);
-
-            var allMetadata = await dbContext.PostMetadatas.ToListAsync();
-
-            foreach (var meta in allMetadata)
+            foreach (var postId in postIds)
             {
-                var hasVotes = voteStats.TryGetValue(meta.PostId, out var votes);
-                var hasViews = viewCounts.TryGetValue(meta.PostId, out var views);
+                await dbContext.UpdateVoteMetadataAsync(postId);
 
-                meta.Upvotes = hasVotes ? votes.Upvotes : 0;
-                meta.Downvotes = hasVotes ? votes.Downvotes : 0;
-                meta.TotalVotes = hasVotes ? votes.TotalVotes : 0;
-                meta.NetVotes = meta.Upvotes - meta.Downvotes;
-                meta.ViewCount = hasViews ? views.ViewCount : 0;
+                var viewCount = await dbContext.Views.CountAsync(v => v.PostId == postId);
+                var commentCount = await dbContext.Comments.CountAsync(c => c.PostId == postId);
+                await dbContext.PostMetadatas
+                    .Where(m => m.PostId == postId)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(m => m.ViewCount, viewCount)
+                        .SetProperty(m => m.CommentCount, commentCount));
             }
-
-            await dbContext.SaveChangesAsync();
         }
     }
 }

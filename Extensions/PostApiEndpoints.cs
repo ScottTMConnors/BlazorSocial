@@ -23,11 +23,10 @@ public static class PostApiEndpoints
                         //await Task.Delay(2000, ct);
 
                         var posts = await dbContext.Posts
-                            .Include(post => post.Author)
                             .OrderByDescending(post => post.PostDate)
-                            .Select(post => post.ToViewPostDto())
                             .Skip(startIndex)
                             .Take(count)
+                            .ToViewPostDtos()
                             .ToListAsync(ct);
 
                         return Results.Ok(posts);
@@ -119,6 +118,51 @@ public static class PostApiEndpoints
                     return Results.Ok(comments);
                 });
 
+            endpoints.MapPost("/api/posts/{id:guid}/comments",
+                async (Guid id, CreateCommentDto request, HttpContext httpContext,
+                    IDbContextFactory<ContentDbContext> dbContextFactory, CancellationToken ct) =>
+                {
+                    var user = httpContext.User;
+                    if (user.Identity?.IsAuthenticated != true)
+                    {
+                        return Results.Unauthorized();
+                    }
+
+                    var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    if (userIdClaim is null)
+                    {
+                        return Results.Unauthorized();
+                    }
+
+                    await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
+
+                    var postId = PostId.Parse(id);
+                    var userId = UserId.Parse(userIdClaim);
+
+                    var postExists = await dbContext.Posts.AnyAsync(p => p.Id == postId, ct);
+                    if (!postExists)
+                    {
+                        return Results.NotFound();
+                    }
+
+                    var comment = new Comment
+                    {
+                        PostId = postId,
+                        AuthorID = userId,
+                        Content = request.Content,
+                        PostDate = DateTime.Now
+                    };
+                    dbContext.Comments.Add(comment);
+                    await dbContext.SaveChangesAsync(ct);
+
+                    await dbContext.PostMetadatas
+                        .Where(m => m.PostId == postId)
+                        .ExecuteUpdateAsync(s => s
+                            .SetProperty(m => m.CommentCount, m => m.CommentCount + 1), ct);
+
+                    return Results.Ok();
+                });
+
             endpoints.MapPost("/api/posts/{id:guid}/vote",
                 async (Guid id, VoteRequestDto request, HttpContext httpContext,
                     IDbContextFactory<ContentDbContext> dbContextFactory, CancellationToken ct) =>
@@ -172,6 +216,8 @@ public static class PostApiEndpoints
                     }
 
                     await dbContext.SaveChangesAsync(ct);
+
+                    await dbContext.UpdateVoteMetadataAsync(postId);
 
                     var metadata = await dbContext.PostMetadatas.FirstOrDefaultAsync(m => m.PostId == postId, ct);
 

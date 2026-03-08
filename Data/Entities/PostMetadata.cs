@@ -14,6 +14,7 @@ public class PostMetadata
     public int TotalVotes { get; set; }
     public int NetVotes { get; set; }
     public int ViewCount { get; set; }
+    public int CommentCount { get; set; }
 
     [NotMapped] public IEnumerable<Vote>? Votes { get; set; }
 

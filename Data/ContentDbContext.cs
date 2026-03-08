@@ -20,6 +20,13 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options)
     {
         base.OnModelCreating(builder);
 
+        builder.Entity<Post>(entity =>
+        {
+            entity.HasIndex(p => p.PostDate)
+                .IsDescending()
+                .HasDatabaseName("IX_Posts_PostDate_Desc");
+        });
+
         builder.Entity<Vote>(entity =>
         {
             entity.HasOne(v => v.Post)
@@ -31,6 +38,9 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options)
                 .WithMany()
                 .HasForeignKey(v => v.UserId)
                 .OnDelete(DeleteBehavior.ClientCascade);
+
+            entity.HasIndex(v => new { v.PostId, v.IsActive })
+                .HasDatabaseName("IX_Votes_PostId_IsActive");
         });
 
         builder.Entity<View>(entity =>
@@ -58,6 +68,10 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options)
                 .WithMany()
                 .HasForeignKey(c => c.AuthorID)
                 .OnDelete(DeleteBehavior.ClientCascade);
+
+            entity.HasIndex(c => new { c.PostId, c.PostDate })
+                .IsDescending(false, true)
+                .HasDatabaseName("IX_Comments_PostId_PostDate_Desc");
         });
     }
 

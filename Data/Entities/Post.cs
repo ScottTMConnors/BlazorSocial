@@ -29,27 +29,23 @@ public class Post : BaseEntity<PostId>
     public PostMetadata PostMetadata { get; set; }
 
     public PostType PostType { get; set; }
-
-    [NotMapped] public IEnumerable<Group>? Groups { get; set; }
-
-    [NotMapped] public IEnumerable<Vote>? Votes { get; set; }
-
-    [NotMapped] public IEnumerable<View>? Views { get; set; }
 }
 
 public static class PostExtensions
 {
-    extension(Post post)
+    extension(IQueryable<Post> query)
     {
-        public ViewPostDto ToViewPostDto() =>
-            new()
+        public IQueryable<ViewPostDto> ToViewPostDtos() =>
+            query.Select(post => new ViewPostDto
             {
                 PostId = post.Id.Value,
                 Title = post.Title,
                 Content = post.Content,
                 PostDate = post.PostDate,
                 PostType = post.PostType.ToString(),
-                AuthorName = post.Author?.UserName ?? "Unknown"
-            };
+                AuthorName = post.Author != null ? post.Author!.UserName ?? "Unknown" : "Unknown",
+                CommentCount = post.PostMetadata.CommentCount,
+                Score = post.PostMetadata.NetVotes
+            });
     }
 }
