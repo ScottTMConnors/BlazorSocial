@@ -45,6 +45,12 @@ namespace Microsoft.AspNetCore.Routing {
                     return TypedResults.LocalRedirect($"~/{returnUrl}");
                 });
 
+            accountGroup.MapGet("/Logout", async (
+                SignInManager<SocialUser> signInManager) => {
+                    await signInManager.SignOutAsync();
+                    return TypedResults.LocalRedirect("~/");
+                });
+
             var manageGroup = accountGroup.MapGroup("/Manage").RequireAuthorization();
 
             manageGroup.MapPost("/LinkExternalLogin", async (

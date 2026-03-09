@@ -1,15 +1,12 @@
-﻿@inherits LayoutComponentBase
+﻿@using BlazorSocial.Client.Components.Layout
+@inherits LayoutComponentBase
 
 <div class="page">
-    <div class="sidebar">
-        <NavMenu/>
-    </div>
+    <NavMenu @rendermode="InteractiveWebAssembly"
+             UserName="@_userName"
+             IsAuthenticated="@_isAuthenticated"/>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
         <article class="content px-4">
             <div class="page-loading">
                 <FluentProgressRing style="margin: 10px auto;"/>
@@ -27,12 +24,21 @@
     <a class="dismiss">🗙</a>
 </div>
 
-@code{
+@code {
+
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
+
+    private string? _userName;
+    private bool _isAuthenticated;
 
     protected override async Task OnInitializedAsync()
     {
-        // MainLayout runs on the server (SSR). WASM page content renders
-        // inside @Body after the WebAssembly runtime loads.
+        if (AuthState is not null)
+        {
+            var state = await AuthState;
+            _isAuthenticated = state.User.Identity?.IsAuthenticated ?? false;
+            _userName = state.User.Identity?.Name;
+        }
     }
 
 }
