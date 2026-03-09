@@ -1,4 +1,3 @@
-using BlazorSocial.Client.Models;
 using BlazorSocial.Components;
 using BlazorSocial.Components.Account;
 using BlazorSocial.Data;
@@ -10,13 +9,15 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.FluentUI.AspNetCore.Components;
+using BlazorSocialClient = BlazorSocial.Client._Imports;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
-    .AddInteractiveWebAssemblyComponents();
+    .AddInteractiveWebAssemblyComponents()
+    .AddAuthenticationStateSerialization();
 
 builder.Services.AddFluentUIComponents();
 
@@ -32,6 +33,8 @@ builder.Services.AddAuthentication(options =>
     })
     .AddIdentityCookies();
 
+builder.Services.AddAuthorization();
+
 var contentDbPath = Path.Combine(builder.Environment.ContentRootPath, "ContentDatabase.mdf");
 var connectionString =
     $"Server=(localdb)\\mssqllocaldb;Database=ContentDatabase;AttachDbFilename={contentDbPath};Trusted_Connection=True;MultipleActiveResultSets=true";
@@ -44,7 +47,11 @@ builder.Services.AddDbContextFactory<ContentDbContext>(options =>
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddIdentityCore<SocialUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddIdentityCore<SocialUser>(options =>
+    {
+        options.SignIn.RequireConfirmedAccount = true;
+        options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+    })
     .AddRoles<IdentityRole<UserId>>()
     .AddEntityFrameworkStores<ContentDbContext>()
     .AddSignInManager()
@@ -71,6 +78,7 @@ await app.SeedDevelopmentDataAsync();
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
+    app.UseWebAssemblyDebugging();
 }
 else
 {
@@ -88,7 +96,7 @@ app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(ViewPostDto).Assembly);
+    .AddAdditionalAssemblies(typeof(BlazorSocialClient).Assembly);
 
 app.MapPostApiEndpoints();
 
