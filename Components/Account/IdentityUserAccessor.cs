@@ -1,4 +1,3 @@
-using BlazorSocial.Data;
 using BlazorSocial.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 

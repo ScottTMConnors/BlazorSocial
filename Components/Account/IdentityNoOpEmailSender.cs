@@ -1,35 +1,39 @@
-using BlazorSocial.Data;
+using System.Net;
+using System.Net.Mail;
 using BlazorSocial.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using System.Net.Mail;
-using System.Net;
 
-namespace BlazorSocial.Components.Account {
-    // Remove the "else if (EmailSender is IdentityNoOpEmailSender)" block from RegisterConfirmation.razor after updating with a real implementation.
-    internal sealed class IdentityNoOpEmailSender : IEmailSender<SocialUser> {
-        private readonly IEmailSender emailSender = new NoOpEmailSender();
+namespace BlazorSocial.Components.Account;
 
-        public static Task SendEmailAsync(string email, string subject, string htmlMessage) {
-            var smtpClient = new SmtpClient("smtp.gmail.com") {
-                Port = 587,
-                Credentials = new NetworkCredential("scottyboy552@gmail.com", "Tm08K006o7Y6"),
-                EnableSsl = true,
-            };
+// Remove the "else if (EmailSender is IdentityNoOpEmailSender)" block from RegisterConfirmation.razor after updating with a real implementation.
+internal sealed class IdentityNoOpEmailSender : IEmailSender<SocialUser>
+{
+    private readonly IEmailSender emailSender = new NoOpEmailSender();
 
-            smtpClient.Send("scottyboy552@gmail.com", email, subject, htmlMessage);
+    public Task SendConfirmationLinkAsync(SocialUser user, string email, string confirmationLink) =>
+        emailSender.SendEmailAsync(email, "Confirm your email",
+            $"Please confirm your account by <a href='{confirmationLink}'>clicking here</a>.");
 
-            return Task.CompletedTask;
-        }
+    public Task SendPasswordResetLinkAsync(SocialUser user, string email, string resetLink) =>
+        emailSender.SendEmailAsync(email, "Reset your password",
+            $"Please reset your password by <a href='{resetLink}'>clicking here</a>.");
 
-        public Task SendConfirmationLinkAsync(SocialUser user, string email, string confirmationLink) {
-            return emailSender.SendEmailAsync(email, "Confirm your email", $"Please confirm your account by <a href='{confirmationLink}'>clicking here</a>.");
-        }
+    public Task SendPasswordResetCodeAsync(SocialUser user, string email, string resetCode) =>
+        emailSender.SendEmailAsync(email, "Reset your password",
+            $"Please reset your password using the following code: {resetCode}");
 
-        public Task SendPasswordResetLinkAsync(SocialUser user, string email, string resetLink) =>
-            emailSender.SendEmailAsync(email, "Reset your password", $"Please reset your password by <a href='{resetLink}'>clicking here</a>.");
+    public static Task SendEmailAsync(string email, string subject, string htmlMessage)
+    {
+        var smtpClient = new SmtpClient("smtp.gmail.com")
+        {
+            Port = 587,
+            Credentials = new NetworkCredential("scottyboy552@gmail.com", "Tm08K006o7Y6"),
+            EnableSsl = true
+        };
 
-        public Task SendPasswordResetCodeAsync(SocialUser user, string email, string resetCode) =>
-            emailSender.SendEmailAsync(email, "Reset your password", $"Please reset your password using the following code: {resetCode}");
+        smtpClient.Send("scottyboy552@gmail.com", email, subject, htmlMessage);
+
+        return Task.CompletedTask;
     }
 }

@@ -5,13 +5,13 @@
     <div class="top-nav-inner">
         @* Left: Brand / Home *@
         <a href="/" class="top-nav-brand">
-            <FluentIcon Value="@(new Size24.ChatMultiple())" Color="Color.Custom" CustomColor="#FF4500" />
+            <FluentIcon Value="@(new Size24.ChatMultiple())" Color="Color.Custom" CustomColor="#FF4500"/>
             <span class="brand-text">BlazorSocial</span>
         </a>
 
         @* Center: Search bar *@
         <div class="top-nav-search">
-            <FluentSearch @bind-Value="_searchText" Placeholder="Search BlazorSocial" />
+            <FluentSearch @bind-Value="_searchText" Placeholder="Search BlazorSocial"/>
         </div>
 
         @* Right: Navigation actions *@
@@ -40,7 +40,7 @@
                 </FluentButton>
                 <FluentButton Appearance="Appearance.Stealth"
                               IconStart="@(new Size20.ArrowExit())"
-                              OnClick="@(() => Nav.NavigateTo("/Account/Logout", forceLoad: true))"
+                              OnClick="@(() => Nav.NavigateTo("/Logout", forceLoad: true, replace: true))"
                               title="Log Out">
                     <span class="nav-btn-label">Log Out</span>
                 </FluentButton>
@@ -49,7 +49,7 @@
             {
                 <FluentButton Appearance="Appearance.Accent"
                               Style="border-radius: 9999px; min-width: 80px;"
-                              OnClick="@(() => Nav.NavigateTo("/Account/Login", forceLoad: true))">
+                              OnClick="@(() => Nav.NavigateTo("/Login", forceLoad: true))">
                     Log In
                 </FluentButton>
             }
