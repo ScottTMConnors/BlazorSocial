@@ -21,6 +21,9 @@
         // Workaround for https://github.com/microsoft/fluentui-blazor/issues
         // .NET 11 disallows registerCustomEventType where eventName === browserEventName.
         // FluentUI registers 'listboxchange' this way; skip those calls so the app starts cleanly.
+        // Pinned to Microsoft.FluentUI.AspNetCore.Components v5.0.0-rc.1-26048.1 — a build warning
+        // is emitted if the package version changes (see CheckFluentUIRegisterCustomEventTypeWorkaround
+        // target in BlazorSocial.csproj). Remove this block once the upstream fix is confirmed.
         (function () {
             const orig = Blazor.registerCustomEventType;
             Blazor.registerCustomEventType = function (eventName, options) {

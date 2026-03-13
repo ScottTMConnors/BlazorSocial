@@ -8,20 +8,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ardalis.SmartEnum" Version="8.2.0" />
-    <PackageReference Include="Ardalis.SmartEnum.EFCore" Version="8.2.0" />
-    <PackageReference Include="EFCore.BulkExtensions" Version="10.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="11.0.0-preview.2.26159.112" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="11.0.0-preview.2.26159.112" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="11.0.0-preview.2.26159.112" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="11.0.0-preview.2.26159.112" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.3">
+    <PackageReference Include="Ardalis.SmartEnum" />
+    <PackageReference Include="Ardalis.SmartEnum.EFCore" />
+    <PackageReference Include="EFCore.BulkExtensions" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="5.0.0-rc.1-26048.1" />
-    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.14.0" />
-    <PackageReference Include="NameGenerator" Version="2.0.4" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" />
+    <PackageReference Include="NameGenerator" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,11 +30,15 @@
 
   <ItemGroup>
     <Compile Remove="BlazorSocial.Client\**" />
+    <Compile Remove="BlazorSocial.Shared\**" />
     <Compile Remove="Data\Migrations\**" />
     <Content Remove="BlazorSocial.Client\**" />
+    <Content Remove="BlazorSocial.Shared\**" />
     <Content Remove="Data\Migrations\**" />
+    <EmbeddedResource Remove="BlazorSocial.Shared\**" />
     <EmbeddedResource Remove="Data\Migrations\**" />
     <None Remove="BlazorSocial.Client\**" />
+    <None Remove="BlazorSocial.Shared\**" />
     <None Remove="Data\Migrations\**" />
   </ItemGroup>
 
@@ -42,8 +46,22 @@
     <None Include=".github\copilot-instructions.md" />
   </ItemGroup>
 
+  <!--
+    This target checks whether the FluentUI package version has changed from the version
+    that was current when the registerCustomEventType workaround in Components/App.razor was written.
+    If the version has been bumped, a build warning is emitted as a reminder to review and
+    potentially remove the workaround.
+  -->
+  <Target Name="CheckFluentUIRegisterCustomEventTypeWorkaround" BeforeTargets="Build">
+    <ItemGroup>
+      <_FluentUIVersion Include="@(PackageVersion)" Condition="'%(Identity)' == 'Microsoft.FluentUI.AspNetCore.Components'" />
+    </ItemGroup>
+    <Warning Condition="'@(_FluentUIVersion)' != '' AND '@(_FluentUIVersion->'%(Version)')' != '5.0.0-rc.1-26048.1'" Text="Microsoft.FluentUI.AspNetCore.Components has been updated from 5.0.0-rc.1-26048.1. Please review the registerCustomEventType workaround in Components/App.razor and remove it if the fix is included in the new version (see https://github.com/microsoft/fluentui-blazor/issues)." />
+  </Target>
+
   <ItemGroup>
     <ProjectReference Include="BlazorSocial.Client\BlazorSocial.Client.csproj" />
+    <ProjectReference Include="BlazorSocial.Shared\BlazorSocial.Shared.csproj" />
   </ItemGroup>
 
 </Project>

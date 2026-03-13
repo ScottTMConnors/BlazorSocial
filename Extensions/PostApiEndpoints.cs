@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using BlazorSocial.Client.Models;
+using BlazorSocial.Shared.Models;
 using BlazorSocial.Data;
 using BlazorSocial.Data.Entities;
 using Microsoft.EntityFrameworkCore;

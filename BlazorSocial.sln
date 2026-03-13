@@ -1,3 +1,4 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.3.11520.95
@@ -12,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorSocial.Client", "BlazorSocial.Client\BlazorSocial.Client.csproj", "{9F5F83D6-B8C2-4B1A-A259-FC82A192665D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorSocial.Shared", "BlazorSocial.Shared\BlazorSocial.Shared.csproj", "{74A7C8F2-EF28-48F6-98F6-1851C818924B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,6 +50,18 @@ Global
 		{9F5F83D6-B8C2-4B1A-A259-FC82A192665D}.Release|x64.Build.0 = Release|Any CPU
 		{9F5F83D6-B8C2-4B1A-A259-FC82A192665D}.Release|x86.ActiveCfg = Release|Any CPU
 		{9F5F83D6-B8C2-4B1A-A259-FC82A192665D}.Release|x86.Build.0 = Release|Any CPU
+		{74A7C8F2-EF28-48F6-98F6-1851C818924B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74A7C8F2-EF28-48F6-98F6-1851C818924B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74A7C8F2-EF28-48F6-98F6-1851C818924B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{74A7C8F2-EF28-48F6-98F6-1851C818924B}.Debug|x64.Build.0 = Debug|Any CPU
+		{74A7C8F2-EF28-48F6-98F6-1851C818924B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{74A7C8F2-EF28-48F6-98F6-1851C818924B}.Debug|x86.Build.0 = Debug|Any CPU
+		{74A7C8F2-EF28-48F6-98F6-1851C818924B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74A7C8F2-EF28-48F6-98F6-1851C818924B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74A7C8F2-EF28-48F6-98F6-1851C818924B}.Release|x64.ActiveCfg = Release|Any CPU
+		{74A7C8F2-EF28-48F6-98F6-1851C818924B}.Release|x64.Build.0 = Release|Any CPU
+		{74A7C8F2-EF28-48F6-98F6-1851C818924B}.Release|x86.ActiveCfg = Release|Any CPU
+		{74A7C8F2-EF28-48F6-98F6-1851C818924B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

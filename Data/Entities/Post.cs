@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using BlazorSocial.Client.Models;
+using BlazorSocial.Shared.Models;
 
 namespace BlazorSocial.Data.Entities;
 

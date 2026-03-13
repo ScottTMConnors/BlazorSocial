@@ -1,4 +1,4 @@
-namespace BlazorSocial.Client.Models;
+namespace BlazorSocial.Shared.Models;
 
 public record CreateCommentDto
 {
