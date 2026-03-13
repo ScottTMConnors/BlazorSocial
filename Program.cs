@@ -1,10 +1,12 @@
+#if DEBUG
+using BlazorSocial.Services.DataGeneratorService;
+#endif
 using BlazorSocial.Components;
 using BlazorSocial.Components.Account;
 using BlazorSocial.Data;
 using BlazorSocial.Data.Entities;
 using BlazorSocial.Extensions;
 using BlazorSocial.Services;
-using BlazorSocial.Services.DataGeneratorService;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +14,8 @@ using Microsoft.FluentUI.AspNetCore.Components;
 using BlazorSocialClient = BlazorSocial.Client._Imports;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -51,15 +55,10 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-var contentDbPath = Path.Combine(builder.Environment.ContentRootPath, "ContentDatabase.mdf");
-var connectionString =
-    $"Server=(localdb)\\mssqllocaldb;Database=ContentDatabase;AttachDbFilename={contentDbPath};Trusted_Connection=True;MultipleActiveResultSets=true";
-builder.Services.AddDbContext<ContentDbContext>(options =>
-    options.UseSqlServer(connectionString));
+builder.AddSqlServerDbContext<ContentDbContext>("ContentDatabase");
 
-builder.Services.AddDbContextFactory<ContentDbContext>(options =>
-        options.UseSqlServer(connectionString),
-    ServiceLifetime.Scoped);
+builder.Services.AddPooledDbContextFactory<ContentDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ContentDatabase")));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -76,7 +75,9 @@ builder.Services.AddIdentityCore<SocialUser>(options =>
 builder.Services.AddSingleton<IEmailSender<SocialUser>, IdentityNoOpEmailSender>();
 
 builder.Services.AddScoped<CurrentUserService>();
+#if DEBUG
 builder.Services.AddScoped<DataGeneratorService>();
+#endif
 
 var app = builder.Build();
 
@@ -88,7 +89,9 @@ using (var scope = app.Services.CreateScope())
 
 await app.SeedRolesAsync();
 await app.SeedAdminUserAsync();
+#if DEBUG
 await app.SeedDevelopmentDataAsync();
+#endif
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -118,5 +121,7 @@ app.MapPostApiEndpoints();
 
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
+
+app.MapDefaultEndpoints();
 
 app.Run();

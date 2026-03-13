@@ -1,1 +1,0 @@
-sqllocaldb stop MSSQLLocalDB; sqllocaldb delete MSSQLLocalDB; sqllocaldb create MSSQLLocalDB; sqllocaldb start MSSQLLocalDB; Remove-Item -Path ".\ContentDatabase.mdf",".\ContentDatabase_log.ldf" -ErrorAction SilentlyContinue;

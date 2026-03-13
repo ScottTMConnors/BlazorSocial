@@ -28,6 +28,25 @@
     <PackageVersion Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.14.0" />
   </ItemGroup>
 
+  <ItemGroup Label="Aspire">
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.1.2" />
+    <PackageVersion Include="Aspire.Hosting.SqlServer" Version="13.1.2" />
+    <PackageVersion Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" Version="13.1.2" />
+  </ItemGroup>
+
+  <ItemGroup Label="OpenTelemetry">
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.0" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.15.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.15.1" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.15.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="Resilience and ServiceDiscovery">
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.4.0" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.4.0" />
+  </ItemGroup>
+
   <ItemGroup Label="Other">
     <PackageVersion Include="NameGenerator" Version="2.0.4" />
   </ItemGroup>

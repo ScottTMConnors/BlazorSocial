@@ -6,15 +6,14 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorSocial", "BlazorSocial.csproj", "{75CF0E14-4D78-466F-8346-AB000FB8F13B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FA186233-0307-4548-8CDD-74239E7265B2}"
-	ProjectSection(SolutionItems) = preProject
-		deletedatasp.sql = deletedatasp.sql
-		migrations.txt = migrations.txt
-		resetdatabase.txt = resetdatabase.txt
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorSocial.Client", "BlazorSocial.Client\BlazorSocial.Client.csproj", "{9F5F83D6-B8C2-4B1A-A259-FC82A192665D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorSocial.Shared", "BlazorSocial.Shared\BlazorSocial.Shared.csproj", "{74A7C8F2-EF28-48F6-98F6-1851C818924B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorSocial.ServiceDefaults", "BlazorSocial.ServiceDefaults\BlazorSocial.ServiceDefaults.csproj", "{43228760-BE11-43A0-98B4-79B5A8EAB462}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorSocial.AppHost", "BlazorSocial.AppHost\BlazorSocial.AppHost.csproj", "{92F52AAA-14BF-489E-A284-360C089DD936}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -62,6 +61,30 @@ Global
 		{74A7C8F2-EF28-48F6-98F6-1851C818924B}.Release|x64.Build.0 = Release|Any CPU
 		{74A7C8F2-EF28-48F6-98F6-1851C818924B}.Release|x86.ActiveCfg = Release|Any CPU
 		{74A7C8F2-EF28-48F6-98F6-1851C818924B}.Release|x86.Build.0 = Release|Any CPU
+		{43228760-BE11-43A0-98B4-79B5A8EAB462}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43228760-BE11-43A0-98B4-79B5A8EAB462}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43228760-BE11-43A0-98B4-79B5A8EAB462}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{43228760-BE11-43A0-98B4-79B5A8EAB462}.Debug|x64.Build.0 = Debug|Any CPU
+		{43228760-BE11-43A0-98B4-79B5A8EAB462}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{43228760-BE11-43A0-98B4-79B5A8EAB462}.Debug|x86.Build.0 = Debug|Any CPU
+		{43228760-BE11-43A0-98B4-79B5A8EAB462}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43228760-BE11-43A0-98B4-79B5A8EAB462}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43228760-BE11-43A0-98B4-79B5A8EAB462}.Release|x64.ActiveCfg = Release|Any CPU
+		{43228760-BE11-43A0-98B4-79B5A8EAB462}.Release|x64.Build.0 = Release|Any CPU
+		{43228760-BE11-43A0-98B4-79B5A8EAB462}.Release|x86.ActiveCfg = Release|Any CPU
+		{43228760-BE11-43A0-98B4-79B5A8EAB462}.Release|x86.Build.0 = Release|Any CPU
+		{92F52AAA-14BF-489E-A284-360C089DD936}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92F52AAA-14BF-489E-A284-360C089DD936}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92F52AAA-14BF-489E-A284-360C089DD936}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{92F52AAA-14BF-489E-A284-360C089DD936}.Debug|x64.Build.0 = Debug|Any CPU
+		{92F52AAA-14BF-489E-A284-360C089DD936}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{92F52AAA-14BF-489E-A284-360C089DD936}.Debug|x86.Build.0 = Debug|Any CPU
+		{92F52AAA-14BF-489E-A284-360C089DD936}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92F52AAA-14BF-489E-A284-360C089DD936}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92F52AAA-14BF-489E-A284-360C089DD936}.Release|x64.ActiveCfg = Release|Any CPU
+		{92F52AAA-14BF-489E-A284-360C089DD936}.Release|x64.Build.0 = Release|Any CPU
+		{92F52AAA-14BF-489E-A284-360C089DD936}.Release|x86.ActiveCfg = Release|Any CPU
+		{92F52AAA-14BF-489E-A284-360C089DD936}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

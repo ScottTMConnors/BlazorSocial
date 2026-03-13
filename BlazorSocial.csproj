@@ -14,6 +14,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
       <PrivateAssets>all</PrivateAssets>
@@ -29,15 +30,23 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="BlazorSocial.AppHost\**" />
     <Compile Remove="BlazorSocial.Client\**" />
+    <Compile Remove="BlazorSocial.ServiceDefaults\**" />
     <Compile Remove="BlazorSocial.Shared\**" />
     <Compile Remove="Data\Migrations\**" />
+    <Content Remove="BlazorSocial.AppHost\**" />
     <Content Remove="BlazorSocial.Client\**" />
+    <Content Remove="BlazorSocial.ServiceDefaults\**" />
     <Content Remove="BlazorSocial.Shared\**" />
     <Content Remove="Data\Migrations\**" />
+    <EmbeddedResource Remove="BlazorSocial.AppHost\**" />
+    <EmbeddedResource Remove="BlazorSocial.ServiceDefaults\**" />
     <EmbeddedResource Remove="BlazorSocial.Shared\**" />
     <EmbeddedResource Remove="Data\Migrations\**" />
+    <None Remove="BlazorSocial.AppHost\**" />
     <None Remove="BlazorSocial.Client\**" />
+    <None Remove="BlazorSocial.ServiceDefaults\**" />
     <None Remove="BlazorSocial.Shared\**" />
     <None Remove="Data\Migrations\**" />
   </ItemGroup>
@@ -61,6 +70,7 @@
 
   <ItemGroup>
     <ProjectReference Include="BlazorSocial.Client\BlazorSocial.Client.csproj" />
+    <ProjectReference Include="BlazorSocial.ServiceDefaults\BlazorSocial.ServiceDefaults.csproj" />
     <ProjectReference Include="BlazorSocial.Shared\BlazorSocial.Shared.csproj" />
   </ItemGroup>
 
