@@ -11,6 +11,5 @@ public record PostDetailsDto
     public int Upvotes { get; init; }
     public int Downvotes { get; init; }
     public bool IsAuthenticated { get; init; }
-    public bool IsUpvote { get; init; }
-    public bool IsVoteActive { get; init; }
+    public int CurrentUserVote { get; init; }
 }

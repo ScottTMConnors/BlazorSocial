@@ -52,7 +52,7 @@ public static class PostExtensions
                     ? 0
                     : post.Votes
                         .Where(v => v.UserId == currentUserId)
-                        .Select(v => v.IsUpvote ? 1 : -1)
+                        .Select(v => v.IsActive ? v.IsUpvote ? 1 : -1 : 0)
                         .FirstOrDefault()
             });
     }

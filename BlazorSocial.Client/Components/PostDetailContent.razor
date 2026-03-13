@@ -1,3 +1,4 @@
+@using BlazorSocial.Client.Components.Shared
 @using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
 @implements IAsyncDisposable
 
@@ -6,48 +7,48 @@
 
 @if (_isLoaded)
 {
-    <FluentStack Orientation="Orientation.Vertical" VerticalGap="10">
-        <FluentCard AreaRestricted="true" style="width:100%;padding:16px;">
-            <FluentLabel Typo="Typography.H3">@_post.Title</FluentLabel>
+    <FluentStack Orientation="Orientation.Vertical" VerticalGap="10px">
+        <FluentCard style="width:100%;padding:16px;">
+            <FluentLabel Size="LabelSize.Large">@_post.Title</FluentLabel>
             <div style="margin-top:8px;">
                 @((MarkupString)_post.Content)
             </div>
-            <FluentDivider Role="DividerRole.Separator" style="margin:12px 0;"/>
-            <FluentLabel Typo="Typography.Body" Color="Color.Neutral">@_post.PostDate</FluentLabel>
-            <FluentLabel Typo="Typography.Body" Color="Color.Neutral">Views: @_post.ViewCount</FluentLabel>
-            <FluentDivider Role="DividerRole.Separator" style="margin:12px 0;"/>
-            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="4" VerticalAlignment="VerticalAlignment.Center">
+            <FluentDivider style="margin:12px 0;"/>
+            <FluentLabel Size="LabelSize.Medium" Color="Color.Default">@_post.PostDate</FluentLabel>
+            <FluentLabel Size="LabelSize.Medium" Color="Color.Default">Views: @_post.ViewCount</FluentLabel>
+            <FluentDivider style="margin:12px 0;"/>
+            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="4px" VerticalAlignment="VerticalAlignment.Center">
                 @if (_post.IsAuthenticated)
                 {
-                    <FluentButton Appearance="Appearance.Lightweight"
+                    <FluentButton Appearance="ButtonAppearance.Transparent"
                                   IconStart="@(new Size20.ArrowUp())"
                                   Title="Upvote"
                                   style="@(_isUpvote && _isVoteActive ? "color:var(--warning);" : "")"
                                   @onclick="Upvote"/>
-                    <FluentButton Appearance="Appearance.Lightweight"
+                    <FluentButton Appearance="ButtonAppearance.Transparent"
                                   IconStart="@(new Size20.ArrowDown())"
                                   Title="Downvote"
                                   style="@(!_isUpvote && _isVoteActive ? "color:purple;" : "")"
                                   @onclick="Downvote"/>
                 }
-                <FluentLabel Typo="Typography.Body">Score: @_netVotes | Upvotes: @_upvotes | Downvotes: @_downvotes</FluentLabel>
+                <VoteDisplay CurrentUserVote="@_post.CurrentUserVote" Score="@_post.NetVotes" PostId="@_post.PostId"/>
             </FluentStack>
         </FluentCard>
 
-        <FluentDivider Role="DividerRole.Separator" style="width:100%;"/>
+        <FluentDivider style="width:100%;"/>
 
         @if (_comments.Count == 0 && _allCommentsLoaded)
         {
-            <FluentLabel Typo="Typography.Body">No comments yet.</FluentLabel>
+            <FluentLabel Size="LabelSize.Medium">No comments yet.</FluentLabel>
         }
         else
         {
             @foreach (var comment in _comments)
             {
-                <FluentCard AreaRestricted="true" style="width:100%;padding:16px;">
-                    <FluentLabel Typo="Typography.Body" Weight="FontWeight.Bold">@comment.AuthorName</FluentLabel>
-                    <FluentLabel Typo="Typography.Body" Color="Color.Neutral">@ConvertDateToString(comment.PostDate)</FluentLabel>
-                    <FluentDivider Role="DividerRole.Separator" style="margin:8px 0;"/>
+                <FluentCard style="width:100%;padding:16px;">
+                    <FluentLabel Size="LabelSize.Medium" Weight="LabelWeight.Semibold">@comment.AuthorName</FluentLabel>
+                    <FluentLabel Size="LabelSize.Medium" Color="Color.Default">@ConvertDateToString(comment.PostDate)</FluentLabel>
+                    <FluentDivider style="margin:8px 0;"/>
                     <div>
                         @((MarkupString)comment.Content)
                     </div>
@@ -57,17 +58,17 @@
         @if (!_allCommentsLoaded)
         {
             <div @ref="_sentinelRef" style="height:1px;"></div>
-            <FluentProgressRing style="margin:10px auto;"/>
+            <LoadingSpinner/>
         }
     </FluentStack>
 }
 else if (_loadFailed)
 {
-    <FluentLabel Typo="Typography.Body">Post not found.</FluentLabel>
+    <FluentLabel Size="LabelSize.Medium">Post not found.</FluentLabel>
 }
 else
 {
-    <FluentProgressRing style="margin: 10px auto;"/>
+    <LoadingSpinner/>
 }
 
 @code {
@@ -78,6 +79,7 @@ else
 
     private PostDetailsDto _post = default!;
     private bool _isUpvote;
+    private bool _isDownvote;
     private bool _isVoteActive;
     private int _netVotes;
     private int _upvotes;
@@ -113,8 +115,9 @@ else
         }
 
         _post = post;
-        _isUpvote = post.IsUpvote;
-        _isVoteActive = post.IsVoteActive;
+        _isUpvote = post.CurrentUserVote == 1;
+        _isDownvote = post.CurrentUserVote == -1;
+        _isVoteActive = post.CurrentUserVote != 0;
         _netVotes = post.NetVotes;
         _upvotes = post.Upvotes;
         _downvotes = post.Downvotes;

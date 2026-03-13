@@ -2,6 +2,8 @@
 
 html, body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #FFFFFF;
+    overflow-y: auto !important;
 }
 
 a, .btn-link {
@@ -749,24 +751,38 @@ main {
     transform: rotate(-45deg);
 }
 
-fluent-card {
-    --card-shadow: none;
-    --card-shadow-size: 0;
+.fluent-card {
     box-shadow: none !important;
     border: none !important;
     outline: none !important;
+    border-radius: 16px;
     transition: background-color 0.2s ease;
 }
 
-fluent-card:hover {
-    background-color: rgba(200, 200, 200, 0.3) !important;
+.fluent-card:hover {
+    background-color: rgba(0, 0, 0, 0.04) !important;
 }
 
-.post-card-link {
+.post-card-link,
+.post-card-link:hover,
+.post-card-link:active {
     text-decoration: none;
     color: inherit;
     display: block;
     width: 100%;
+    margin: 4px 0;
+}
+
+/* ===== Dialog overrides ===== */
+
+fluent-dialog-body {
+    overflow-y: auto;
+    padding: 16px;
+}
+
+/* Fix v5 FluentStack height:100% preventing page scroll */
+fluent-stack-vertical {
+    height: auto !important;
 }
 
 /* ===== CreatePost ===== */

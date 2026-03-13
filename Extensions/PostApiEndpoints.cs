@@ -49,45 +49,41 @@ public static class PostApiEndpoints
                     await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
                     var postId = PostId.Parse(id.ToString());
+
+                    if (postId is null)
+                    {
+                        return Results.BadRequest();
+                    }
+
+                    var userId = httpContext.GetCurrentUserId();
+
                     var post = await dbContext.Posts
-                        .Include(p => p.PostMetadata)
-                        .FirstOrDefaultAsync(p => p.Id == postId, ct);
+                        .Where(p => p.Id == postId)
+                        .Select(post => new PostDetailsDto
+                        {
+                            PostId = post.Id.Value,
+                            Title = post.Title,
+                            Content = post.Content,
+                            PostDate = post.PostDate,
+                            ViewCount = post.PostMetadata.ViewCount,
+                            NetVotes = post.PostMetadata.NetVotes,
+                            Upvotes = post.PostMetadata.Upvotes,
+                            Downvotes = post.PostMetadata.Downvotes,
+                            CurrentUserVote = userId == null
+                                ? 0
+                                : post.Votes
+                                    .Where(v => v.UserId == userId)
+                                    .Select(v => v.IsActive ? v.IsUpvote ? 1 : -1 : 0)
+                                    .FirstOrDefault()
+                        })
+                        .FirstOrDefaultAsync(ct);
 
                     if (post is null)
                     {
                         return Results.NotFound();
                     }
 
-                    var userId = httpContext.GetCurrentUserId();
-                    var isAuthenticated = userId is not null;
-                    var isUpvote = false;
-                    var isVoteActive = false;
-
-                    if (isAuthenticated)
-                    {
-                        var vote = await dbContext.Votes
-                            .FirstOrDefaultAsync(v => v.UserId == userId && v.PostId == postId, ct);
-                        if (vote is not null)
-                        {
-                            isUpvote = vote.IsUpvote;
-                            isVoteActive = vote.IsActive;
-                        }
-                    }
-
-                    return Results.Ok(new PostDetailsDto
-                    {
-                        PostId = post.Id.Value,
-                        Title = post.Title,
-                        Content = post.Content,
-                        PostDate = post.PostDate,
-                        ViewCount = post.PostMetadata?.ViewCount ?? 0,
-                        NetVotes = post.PostMetadata?.NetVotes ?? 0,
-                        Upvotes = post.PostMetadata?.Upvotes ?? 0,
-                        Downvotes = post.PostMetadata?.Downvotes ?? 0,
-                        IsAuthenticated = isAuthenticated,
-                        IsUpvote = isUpvote,
-                        IsVoteActive = isVoteActive
-                    });
+                    return Results.Ok(post);
                 });
 
             endpoints.MapGet("/api/posts/{id:guid}/comments",

@@ -11,19 +11,19 @@
 
         @* Center: Search bar *@
         <div class="top-nav-search">
-            <FluentSearch @bind-Value="_searchText" Placeholder="Search BlazorSocial"/>
+            <FluentTextInput @bind-Value="_searchText" TextInputType="TextInputType.Search" Placeholder="Search BlazorSocial"/>
         </div>
 
         @* Right: Navigation actions *@
         <nav class="top-nav-actions">
-            <FluentButton Appearance="Appearance.Stealth"
+            <FluentButton Appearance="ButtonAppearance.Subtle"
                           IconStart="@(new Size20.Add())"
                           OnClick="@(() => Nav.NavigateTo("/CreatePost"))"
                           title="Create Post">
                 <span class="nav-btn-label">Create</span>
             </FluentButton>
 
-            <FluentButton Appearance="Appearance.Stealth"
+            <FluentButton Appearance="ButtonAppearance.Subtle"
                           IconStart="@(new Size20.Shield())"
                           OnClick="@(() => Nav.NavigateTo("/Admin"))"
                           title="Admin">
@@ -32,13 +32,13 @@
 
             @if (IsAuthenticated)
             {
-                <FluentButton Appearance="Appearance.Stealth"
+                <FluentButton Appearance="ButtonAppearance.Subtle"
                               IconStart="@(new Size20.Person())"
                               OnClick="@(() => Nav.NavigateTo("/Account/Manage"))"
                               title="@UserName">
                     <span class="nav-btn-label">@UserName</span>
                 </FluentButton>
-                <FluentButton Appearance="Appearance.Stealth"
+                <FluentButton Appearance="ButtonAppearance.Subtle"
                               IconStart="@(new Size20.ArrowExit())"
                               OnClick="@(() => Nav.NavigateTo("/Logout", forceLoad: true, replace: true))"
                               title="Log Out">
@@ -47,7 +47,7 @@
             }
             else
             {
-                <FluentButton Appearance="Appearance.Accent"
+                <FluentButton Appearance="ButtonAppearance.Primary"
                               Style="border-radius: 9999px; min-width: 80px;"
                               OnClick="@(() => Nav.NavigateTo("/Login", forceLoad: true))">
                     Log In

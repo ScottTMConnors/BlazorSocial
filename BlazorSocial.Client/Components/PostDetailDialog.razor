@@ -1,18 +1,13 @@
-@implements IDialogContentComponent<string>
-
-<FluentDialogHeader ShowDismiss="true">
-    <FluentLabel Typo="Typography.PaneHeader">Post Details</FluentLabel>
-</FluentDialogHeader>
-<FluentDialogBody Style="overflow-y: auto; max-height: 80vh;">
-    <PostDetailContent PostId="@Content" />
+<FluentDialogBody Style="max-height: 85vh;">
+    @if (!string.IsNullOrEmpty(PostId))
+    {
+        <PostDetailContent PostId="@PostId" />
+    }
 </FluentDialogBody>
 
 @code {
 
     [Parameter]
-    public string Content { get; set; } = default!;
-
-    [CascadingParameter]
-    public FluentDialog Dialog { get; set; } = default!;
+    public string PostId { get; set; } = "";
 
 }

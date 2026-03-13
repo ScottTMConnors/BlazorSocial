@@ -1,4 +1,5 @@
 ﻿@using BlazorSocial.Client.Components.Layout
+@using BlazorSocial.Client.Components.Shared
 @inherits LayoutComponentBase
 
 <div class="page">
@@ -9,7 +10,7 @@
     <main>
         <article class="content px-4">
             <div class="page-loading">
-                <FluentProgressRing style="margin: 10px auto;"/>
+                <LoadingSpinner/>
             </div>
             @Body
         </article>

@@ -7,6 +7,22 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthenticationStateDeserialization();
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-builder.Services.AddFluentUIComponents();
+builder.Services.AddFluentUIComponents(options =>
+{
+    options.MarkupSanitized.SanitizeInlineStyle = value =>
+    {
+        if (value.Contains("url(", StringComparison.OrdinalIgnoreCase) ||
+            value.Contains("expression(", StringComparison.OrdinalIgnoreCase) ||
+            value.Contains("javascript:", StringComparison.OrdinalIgnoreCase) ||
+            value.Contains("@import", StringComparison.OrdinalIgnoreCase) ||
+            value.Contains("-moz-binding", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"The provided CSS inline style contains potentially unsafe content: {value}");
+        }
+
+        return value;
+    };
+});
 
 await builder.Build().RunAsync();

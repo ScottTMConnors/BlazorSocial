@@ -23,37 +23,37 @@
     </defs>
 </svg>
 
-<FluentStack Orientation="Orientation.Vertical" VerticalGap="10" style="max-width:1000px; margin:0 auto 0 auto;">
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="10px" style="max-width:1000px; margin:0 auto 0 auto; height:auto;">
     @foreach (var post in _posts)
     {
         <a href="@($"/PostDetails/{post.PostId:N}")" data-enhance-nav="false" @onclick="@(e => HandleCardClick(e, post.PostId))" @onclick:preventDefault class="post-card-link">
-            <FluentCard AreaRestricted="true" style="width:100%;max-height:350px;padding:16px;overflow:hidden;">
+            <FluentCard style="width:100%;max-height:350px;padding:16px;overflow:hidden;">
                 <div style="display:flex; align-items:baseline; gap:6px; font-size:12px;">
                     <span style="font-weight:700;">@post.AuthorName</span>
                     <span style="color:var(--neutral-foreground-hint);">•</span>
                     <span style="color:var(--neutral-foreground-hint);">@ConvertDateToString(post.PostDate)</span>
                 </div>
                 <div class="post-card-title">
-                    <FluentLabel Typo="Typography.H3">@post.Title</FluentLabel>
+                    <FluentLabel Size="LabelSize.Large">@post.Title</FluentLabel>
                 </div>
                 <div class="post-card-content">
                     @((MarkupString)post.Content)
                 </div>
                 <div class="post-card-actions">
-                    <VoteDisplay @bind-CurrentUserVote="@post.CurrentUserVote" @bind-Score="@post.Score" OnVote="@(isUpvote => VotePost(post, isUpvote))"/>
+                    <VoteDisplay CurrentUserVote="@post.CurrentUserVote" Score="@post.Score" PostId="@post.PostId"/>
                     <div class="post-action-pill glass-pill">
-                        <FluentIcon Value="@(new Size20.Comment())" Color="@Color.Neutral"/>
+                        <FluentIcon Value="@(new Size20.Comment())" Color="@Color.Default"/>
                         <span class="post-action-count">@post.CommentCount</span>
                     </div>
                 </div>
             </FluentCard>
         </a>
-        <FluentDivider Role="@DividerRole.Separator" style="width: 100%;"/>
+        <FluentDivider style="width: 100%;"/>
     }
     @if (!_allLoaded)
     {
         <div @ref="_sentinelRef" style="height:1px;"></div>
-        <FluentProgressRing style="margin: 10px auto;"/>
+        <LoadingSpinner/>
     }
 </FluentStack>
 
@@ -148,12 +148,6 @@
         };
     }
 
-    private Task VotePost(ViewPostDto post, bool isUpvote)
-    {
-        StateHasChanged();
-        return Http.PostAsJsonAsync($"api/posts/{post.PostId:N}/vote", new VoteRequestDto { IsUpvote = isUpvote }, CancellationToken);
-    }
-
     private async Task HandleCardClick(MouseEventArgs e, Guid postId)
     {
         if (e.CtrlKey || e.MetaKey || e.ShiftKey)
@@ -162,16 +156,15 @@
             return;
         }
 
-        await DialogService.ShowDialogAsync<PostDetailDialog>(postId.ToString("N"), new DialogParameters
+        await DialogService.ShowDialogAsync<PostDetailDialog>(options =>
         {
-            Title = "Post Details",
-            Width = "min(1500px, 90vw)",
-            Height = "fit-content",
-            PreventDismissOnOverlayClick = false,
-            PreventScroll = true,
-            ShowDismiss = true,
-            PrimaryAction = null,
-            SecondaryAction = null
+            options.Width = "min(1500px, 95vw)";
+            options.Height = "fit-content";
+            options.Modal = false;
+            options.Parameters = new Dictionary<string, object>
+            {
+                { nameof(PostDetailDialog.PostId), postId.ToString("N") }
+            };
         });
     }
 

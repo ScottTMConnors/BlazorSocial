@@ -1,5 +1,6 @@
 ﻿@using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
 @using FilledIcons = Microsoft.FluentUI.AspNetCore.Components.Icons.Filled
+@inject HttpClient Http
 
 <div class="post-card-actions">
     <div class="post-action-pill glass-pill @(CurrentUserVote == 1 ? "glow-up" : CurrentUserVote == -1 ? "glow-down" : "")">
@@ -28,17 +29,29 @@
 </div>
 
 @code {
-
     [Parameter] [EditorRequired] public int CurrentUserVote { get; set; }
-    [Parameter] [EditorRequired] public EventCallback<int> CurrentUserVoteChanged { get; set; }
 
     [Parameter] [EditorRequired] public int Score { get; set; }
-    [Parameter] [EditorRequired] public EventCallback<int> ScoreChanged { get; set; }
+    [Parameter] [EditorRequired] public Guid PostId { get; set; }
 
-    [Parameter] public EventCallback<bool> OnVote { get; set; }
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
 
-    private async Task VotePost(bool isUpvote)
+    private bool IsAuthenticated { get; set; }
+
+    protected override async Task OnInitializedAsync()
     {
+        var state = await AuthState!;
+        IsAuthenticated = state.User.Identity?.IsAuthenticated ?? false;
+    }
+
+
+    private Task VotePost(bool isUpvote)
+    {
+        if (!IsAuthenticated)
+        {
+            return Task.CompletedTask;
+        }
+
         if (isUpvote)
         {
             if (CurrentUserVote == 1)
@@ -49,7 +62,17 @@
             }
             else
             {
-                Score += 1;
+                if (CurrentUserVote == -1)
+                {
+                    // Remove downvote and add upvote
+                    Score += 2;
+                }
+                else
+                {
+                    // Add upvote
+                    Score += 1;
+                }
+
                 CurrentUserVote = 1;
             }
         }
@@ -63,14 +86,24 @@
             }
             else
             {
-                Score -= 1;
+                if (CurrentUserVote == 1)
+                {
+                    // Remove upvote and add downvote
+                    Score -= 2;
+                }
+                else
+                {
+                    // Add downvote
+                    Score -= 1;
+                }
+
                 CurrentUserVote = -1;
             }
         }
 
-        await CurrentUserVoteChanged.InvokeAsync(CurrentUserVote);
-        await ScoreChanged.InvokeAsync(Score);
-        await OnVote.InvokeAsync(isUpvote);
+        return SendVote(isUpvote);
     }
+
+    private Task SendVote(bool isUpvote) => Http.PostAsJsonAsync($"api/posts/{PostId:N}/vote", new VoteRequestDto { IsUpvote = isUpvote });
 
 }
