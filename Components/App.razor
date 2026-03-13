@@ -17,6 +17,18 @@
     <FluentTooltipProvider />
     <Routes />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script>
+        // Workaround for https://github.com/microsoft/fluentui-blazor/issues
+        // .NET 11 disallows registerCustomEventType where eventName === browserEventName.
+        // FluentUI registers 'listboxchange' this way; skip those calls so the app starts cleanly.
+        (function () {
+            const orig = Blazor.registerCustomEventType;
+            Blazor.registerCustomEventType = function (eventName, options) {
+                if (options && options.browserEventName === eventName) return;
+                return orig.call(this, eventName, options);
+            };
+        })();
+    </script>
 </body>
 
 </html>
