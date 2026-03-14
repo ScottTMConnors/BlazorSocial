@@ -20,6 +20,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
       <PrivateAssets>all</PrivateAssets>
@@ -32,29 +33,33 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Migrations\ContentDb\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Remove="BlazorSocial.AppHost\**" />
     <Compile Remove="BlazorSocial.Client\**" />
     <Compile Remove="BlazorSocial.ServiceDefaults\**" />
     <Compile Remove="BlazorSocial.Shared\**" />
+    <Compile Remove="BlazorSocial.Tests\**" />
     <Compile Remove="Data\Migrations\**" />
+    <Compile Remove="Migrations\**" />
     <Content Remove="BlazorSocial.AppHost\**" />
     <Content Remove="BlazorSocial.Client\**" />
     <Content Remove="BlazorSocial.ServiceDefaults\**" />
     <Content Remove="BlazorSocial.Shared\**" />
+    <Content Remove="BlazorSocial.Tests\**" />
     <Content Remove="Data\Migrations\**" />
+    <Content Remove="Migrations\**" />
     <EmbeddedResource Remove="BlazorSocial.AppHost\**" />
     <EmbeddedResource Remove="BlazorSocial.ServiceDefaults\**" />
     <EmbeddedResource Remove="BlazorSocial.Shared\**" />
+    <EmbeddedResource Remove="BlazorSocial.Tests\**" />
     <EmbeddedResource Remove="Data\Migrations\**" />
+    <EmbeddedResource Remove="Migrations\**" />
     <None Remove="BlazorSocial.AppHost\**" />
     <None Remove="BlazorSocial.Client\**" />
     <None Remove="BlazorSocial.ServiceDefaults\**" />
     <None Remove="BlazorSocial.Shared\**" />
+    <None Remove="BlazorSocial.Tests\**" />
     <None Remove="Data\Migrations\**" />
+    <None Remove="Migrations\**" />
   </ItemGroup>
 
   <ItemGroup>

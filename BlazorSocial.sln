@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorSocial.ServiceDefault
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorSocial.AppHost", "BlazorSocial.AppHost\BlazorSocial.AppHost.csproj", "{92F52AAA-14BF-489E-A284-360C089DD936}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorSocial.Tests", "BlazorSocial.Tests\BlazorSocial.Tests.csproj", "{643AB4F0-AAA2-4446-99A3-82DCF7C1714C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +87,18 @@ Global
 		{92F52AAA-14BF-489E-A284-360C089DD936}.Release|x64.Build.0 = Release|Any CPU
 		{92F52AAA-14BF-489E-A284-360C089DD936}.Release|x86.ActiveCfg = Release|Any CPU
 		{92F52AAA-14BF-489E-A284-360C089DD936}.Release|x86.Build.0 = Release|Any CPU
+		{643AB4F0-AAA2-4446-99A3-82DCF7C1714C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{643AB4F0-AAA2-4446-99A3-82DCF7C1714C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{643AB4F0-AAA2-4446-99A3-82DCF7C1714C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{643AB4F0-AAA2-4446-99A3-82DCF7C1714C}.Debug|x64.Build.0 = Debug|Any CPU
+		{643AB4F0-AAA2-4446-99A3-82DCF7C1714C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{643AB4F0-AAA2-4446-99A3-82DCF7C1714C}.Debug|x86.Build.0 = Debug|Any CPU
+		{643AB4F0-AAA2-4446-99A3-82DCF7C1714C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{643AB4F0-AAA2-4446-99A3-82DCF7C1714C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{643AB4F0-AAA2-4446-99A3-82DCF7C1714C}.Release|x64.ActiveCfg = Release|Any CPU
+		{643AB4F0-AAA2-4446-99A3-82DCF7C1714C}.Release|x64.Build.0 = Release|Any CPU
+		{643AB4F0-AAA2-4446-99A3-82DCF7C1714C}.Release|x86.ActiveCfg = Release|Any CPU
+		{643AB4F0-AAA2-4446-99A3-82DCF7C1714C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

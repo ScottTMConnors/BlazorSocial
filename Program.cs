@@ -55,10 +55,20 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-builder.AddSqlServerDbContext<ContentDbContext>("ContentDatabase");
-
-builder.Services.AddPooledDbContextFactory<ContentDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("ContentDatabase")));
+if (builder.Environment.IsEnvironment("Testing"))
+{
+    // Use SQLite in-memory for test runs. The connection is kept alive by
+    // TestWebAppFactory so the named database persists for the whole test run.
+    const string testConnectionString = "DataSource=BlazorSocialTest;Mode=Memory;Cache=Shared";
+    builder.Services.AddDbContext<ContentDbContext>(options => options.UseSqlite(testConnectionString));
+    builder.Services.AddDbContextFactory<ContentDbContext>(options => options.UseSqlite(testConnectionString));
+}
+else
+{
+    builder.AddSqlServerDbContext<ContentDbContext>("ContentDatabase");
+    builder.Services.AddPooledDbContextFactory<ContentDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("ContentDatabase")));
+}
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -127,3 +137,5 @@ app.MapAdditionalIdentityEndpoints();
 app.MapDefaultEndpoints();
 
 app.Run();
+
+public partial class Program { }
