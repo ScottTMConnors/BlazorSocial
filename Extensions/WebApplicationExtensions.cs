@@ -50,7 +50,7 @@ public static class IdentitySeedExtensions
 
             return app;
         }
-
+#if DEBUG
         public async Task<WebApplication> SeedDevelopmentDataAsync()
         {
             if (!app.Environment.IsDevelopment())
@@ -72,5 +72,6 @@ public static class IdentitySeedExtensions
 
             return app;
         }
+#endif
     }
 }

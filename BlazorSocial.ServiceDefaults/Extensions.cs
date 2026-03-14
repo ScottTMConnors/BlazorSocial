@@ -3,19 +3,17 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ServiceDiscovery;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 
-namespace Microsoft.Extensions.Hosting;
+namespace BlazorSocial.ServiceDefaults;
 
 public static class Extensions
 {
     /// <summary>
-    /// Adds default services including OpenTelemetry, health checks, service discovery, and resilience.
+    ///     Adds default services including OpenTelemetry, health checks, service discovery, and resilience.
     /// </summary>
     public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBuilder builder)
     {
@@ -32,7 +30,7 @@ public static class Extensions
     }
 
     /// <summary>
-    /// Configures OpenTelemetry logging, metrics, and tracing for the application.
+    ///     Configures OpenTelemetry logging, metrics, and tracing for the application.
     /// </summary>
     public static IHostApplicationBuilder ConfigureOpenTelemetry(this IHostApplicationBuilder builder)
     {
@@ -66,7 +64,7 @@ public static class Extensions
     }
 
     /// <summary>
-    /// Adds default health checks for the application.
+    ///     Adds default health checks for the application.
     /// </summary>
     public static IHostApplicationBuilder AddDefaultHealthChecks(this IHostApplicationBuilder builder)
     {
@@ -77,7 +75,7 @@ public static class Extensions
     }
 
     /// <summary>
-    /// Maps default health check endpoints (/health for readiness, /alive for liveness).
+    ///     Maps default health check endpoints (/health for readiness, /alive for liveness).
     /// </summary>
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {

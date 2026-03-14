@@ -10,4 +10,8 @@
     <Folder Include="Models\Extensions\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Ardalis.SmartEnum" />
+  </ItemGroup>
+
 </Project>

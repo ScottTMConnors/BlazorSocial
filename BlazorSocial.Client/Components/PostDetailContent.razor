@@ -134,8 +134,10 @@ else
             await LoadMoreComments();
             StateHasChanged();
 
-            _module = await JS.InvokeAsync<IJSObjectReference>(
+            await using var jsModule = await JS.InvokeAsync<IJSObjectReference>(
                 "import", CancellationToken, "./js/ViewPosts.js");
+            _module = await jsModule.InvokeAsync<IJSObjectReference>(
+                "createScrollObserver", CancellationToken);
             _selfRef = DotNetObjectReference.Create(this);
 
             if (!_allCommentsLoaded)

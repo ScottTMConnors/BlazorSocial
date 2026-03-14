@@ -6,6 +6,7 @@ using BlazorSocial.Components.Account;
 using BlazorSocial.Data;
 using BlazorSocial.Data.Entities;
 using BlazorSocial.Extensions;
+using BlazorSocial.ServiceDefaults;
 using BlazorSocial.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -19,7 +20,6 @@ builder.AddServiceDefaults();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents()
     .AddAuthenticationStateSerialization();
 
@@ -105,7 +105,6 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-//var myService = app.Services.GetRequiredService<MetaService>();
 
 app.UseHttpsRedirection();
 
@@ -113,7 +112,6 @@ app.MapStaticAssets();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(BlazorSocialClient).Assembly);
 
