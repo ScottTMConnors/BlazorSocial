@@ -2,6 +2,7 @@
 @page "/ViewPosts"
 
 @rendermode @(new InteractiveWebAssemblyRenderMode(false))
+@using System.Collections.Frozen
 @using BlazorSocial.Client.Components.Shared
 @using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
 @implements IAsyncDisposable
@@ -161,10 +162,10 @@
             options.Width = "min(1500px, 95vw)";
             options.Height = "fit-content";
             options.Modal = false;
-            options.Parameters = new Dictionary<string, object>
+            options.Parameters = new Dictionary<string, object?>
             {
                 { nameof(PostDetailDialog.PostId), postId.ToString("N") }
-            };
+            }.ToFrozenDictionary();
         });
     }
 
