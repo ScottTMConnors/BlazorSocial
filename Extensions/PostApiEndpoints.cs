@@ -2,6 +2,7 @@ using System.Security.Claims;
 using BlazorSocial.Data;
 using BlazorSocial.Data.Entities;
 using BlazorSocial.Shared.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlazorSocial.Extensions;
@@ -13,9 +14,11 @@ public static class PostApiEndpoints
         public IEndpointRouteBuilder MapPostApiEndpoints()
         {
             endpoints.MapGet(ApiRoute.Templates.Posts,
-                async (int startIndex, int count, HttpContext httpContext,
+                async (HttpContext httpContext,
                     IDbContextFactory<ContentDbContext> dbContextFactory,
-                    CancellationToken ct) =>
+                    CancellationToken ct,
+                    [FromQuery] int startIndex = 0,
+                    [FromQuery] int count = 10) =>
                 {
                     try
                     {
@@ -80,8 +83,11 @@ public static class PostApiEndpoints
                 });
 
             endpoints.MapGet(ApiRoute.Templates.PostComments,
-                async (PostId id, int startIndex, int count,
-                    IDbContextFactory<ContentDbContext> dbContextFactory, CancellationToken ct) =>
+                async (PostId id,
+                    IDbContextFactory<ContentDbContext> dbContextFactory,
+                    CancellationToken ct,
+                    [FromQuery] int startIndex = 0,
+                    [FromQuery] int count = 10) =>
                 {
                     await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 

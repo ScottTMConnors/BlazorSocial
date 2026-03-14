@@ -74,6 +74,8 @@ builder.Services.AddIdentityCore<SocialUser>(options =>
 
 builder.Services.AddSingleton<IEmailSender<SocialUser>, IdentityNoOpEmailSender>();
 
+builder.Services.AddOpenApi();
+
 builder.Services.AddScoped<CurrentUserService>();
 #if DEBUG
 builder.Services.AddScoped<DataGeneratorService>();
@@ -98,6 +100,8 @@ if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
     app.UseWebAssemblyDebugging();
+    app.MapOpenApi();
+    app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "BlazorSocial API"));
 }
 else
 {
