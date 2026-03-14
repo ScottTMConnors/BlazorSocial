@@ -11,7 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ardalis.SmartEnum" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Refit" />
   </ItemGroup>
 
 </Project>

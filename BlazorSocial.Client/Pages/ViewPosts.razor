@@ -2,14 +2,12 @@
 @page "/ViewPosts"
 
 @rendermode @(new InteractiveWebAssemblyRenderMode(false))
-@using System.Collections.Frozen
 @using BlazorSocial.Client.Components.Shared
 @using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
 @implements IAsyncDisposable
 
-@inject HttpClient Http
+@inject IPostsApi Api
 @inject IJSRuntime JS
-@inject IDialogService DialogService
 
 <svg style="position:absolute;width:0;height:0;" aria-hidden="true">
     <defs>
@@ -27,7 +25,7 @@
 <FluentStack Orientation="Orientation.Vertical" VerticalGap="10px" style="max-width:1000px; margin:0 auto 0 auto; height:auto;">
     @foreach (var post in _posts)
     {
-        <a href="@($"/PostDetails/{post.PostId:N}")" data-enhance-nav="false" @onclick="@(e => HandleCardClick(e, post.PostId))" @onclick:preventDefault class="post-card-link">
+        <a href="@($"/PostDetails/{post.PostId}")" data-enhance-nav="false" @onclick="@(e => HandleCardClick(e, post.PostId))" @onclick:preventDefault class="post-card-link">
             <FluentCard style="width:100%;max-height:350px;padding:16px;overflow:hidden;">
                 <div style="display:flex; align-items:baseline; gap:6px; font-size:12px;">
                     <span style="font-weight:700;">@post.AuthorName</span>
@@ -58,6 +56,13 @@
     }
 </FluentStack>
 
+<FluentDialog @ref="_postDetailDialog" Modal="false" Style="min-width: 1500px; height: fit-content;">
+    @if (CurrentPostId is not null)
+    {
+        <PostDetailContent PostId="@CurrentPostId"/>
+    }
+</FluentDialog>
+
 @code {
 
     private const int PageSize = 10;
@@ -71,6 +76,10 @@
 
     private readonly CancellationTokenSource _cts = new();
     private CancellationToken CancellationToken => _cts.Token;
+
+    private PostId? CurrentPostId { get; set; }
+
+    private FluentDialog? _postDetailDialog;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -112,8 +121,7 @@
         _loading = true;
         try
         {
-            var newPosts = await Http.GetFromJsonAsync<List<ViewPostDto>>(
-                $"api/posts?startIndex={_posts.Count}&count={PageSize}", CancellationToken) ?? [];
+            var newPosts = await Api.GetPostsAsync(_posts.Count, PageSize, CancellationToken);
 
             _posts.AddRange(newPosts);
 
@@ -151,24 +159,16 @@
         };
     }
 
-    private async Task HandleCardClick(MouseEventArgs e, Guid postId)
+    private async Task HandleCardClick(MouseEventArgs e, PostId postId)
     {
         if (e.CtrlKey || e.MetaKey || e.ShiftKey)
         {
-            await JS.InvokeVoidAsync("open", CancellationToken, $"/PostDetails/{postId:N}", "_blank");
+            await JS.InvokeVoidAsync("open", CancellationToken, $"/PostDetails/{postId}", "_blank");
             return;
         }
 
-        await DialogService.ShowDialogAsync<PostDetailDialog>(options =>
-        {
-            options.Width = "min(1500px, 95vw)";
-            options.Height = "fit-content";
-            options.Modal = false;
-            options.Parameters = new Dictionary<string, object?>
-            {
-                { nameof(PostDetailDialog.PostId), postId.ToString("N") }
-            }.ToFrozenDictionary();
-        });
+        CurrentPostId = postId;
+        await _postDetailDialog.ShowAsync();
     }
 
     public async ValueTask DisposeAsync()

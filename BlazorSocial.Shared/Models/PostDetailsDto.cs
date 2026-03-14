@@ -2,7 +2,7 @@ namespace BlazorSocial.Shared.Models;
 
 public record PostDetailsDto
 {
-    public Guid PostId { get; init; }
+    public PostId PostId { get; init; } = PostId.Empty;
     public string Title { get; init; } = "";
     public string Content { get; init; } = "";
     public DateTime PostDate { get; init; }

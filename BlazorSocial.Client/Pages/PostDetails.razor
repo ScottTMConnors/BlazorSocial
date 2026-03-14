@@ -6,7 +6,7 @@
 
 @if (_isValid)
 {
-    <PostDetailContent PostId="@IdParam" />
+    <PostDetailContent PostId="@PostId"/>
 }
 
 @code {
@@ -15,13 +15,17 @@
 
     private bool _isValid;
 
+    private PostId PostId { get; set; } = PostId.Empty;
+
     protected override void OnInitialized()
     {
-        if (string.IsNullOrEmpty(IdParam) || !Guid.TryParse(IdParam, out _))
+        if (string.IsNullOrEmpty(IdParam) || !PostId.TryParse(IdParam, out var postId))
         {
             NavigationManager.NavigateTo("/ViewPosts");
             return;
         }
+
+        PostId = postId;
 
         _isValid = true;
     }

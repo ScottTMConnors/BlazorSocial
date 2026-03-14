@@ -1,7 +1,7 @@
 using System.Security.Claims;
-using BlazorSocial.Shared.Models;
 using BlazorSocial.Data;
 using BlazorSocial.Data.Entities;
+using BlazorSocial.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlazorSocial.Extensions;
@@ -12,7 +12,7 @@ public static class PostApiEndpoints
     {
         public IEndpointRouteBuilder MapPostApiEndpoints()
         {
-            endpoints.MapGet("/api/posts",
+            endpoints.MapGet(ApiRoute.Templates.Posts,
                 async (int startIndex, int count, HttpContext httpContext,
                     IDbContextFactory<ContentDbContext> dbContextFactory,
                     CancellationToken ct) =>
@@ -42,26 +42,19 @@ public static class PostApiEndpoints
                     }
                 });
 
-            endpoints.MapGet("/api/posts/{id:guid}",
-                async (Guid id, HttpContext httpContext, IDbContextFactory<ContentDbContext> dbContextFactory,
+            endpoints.MapGet(ApiRoute.Templates.PostById,
+                async (PostId id, HttpContext httpContext, IDbContextFactory<ContentDbContext> dbContextFactory,
                     CancellationToken ct) =>
                 {
                     await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
-                    var postId = PostId.Parse(id.ToString());
-
-                    if (postId is null)
-                    {
-                        return Results.BadRequest();
-                    }
-
                     var userId = httpContext.GetCurrentUserId();
 
                     var post = await dbContext.Posts
-                        .Where(p => p.Id == postId)
+                        .Where(p => p.Id == id)
                         .Select(post => new PostDetailsDto
                         {
-                            PostId = post.Id.Value,
+                            PostId = post.Id,
                             Title = post.Title,
                             Content = post.Content,
                             PostDate = post.PostDate,
@@ -86,16 +79,15 @@ public static class PostApiEndpoints
                     return Results.Ok(post);
                 });
 
-            endpoints.MapGet("/api/posts/{id:guid}/comments",
-                async (Guid id, int startIndex, int count,
+            endpoints.MapGet(ApiRoute.Templates.PostComments,
+                async (PostId id, int startIndex, int count,
                     IDbContextFactory<ContentDbContext> dbContextFactory, CancellationToken ct) =>
                 {
                     await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
-                    var postId = PostId.Parse(id);
 
                     var comments = await dbContext.Comments
                         .Include(c => c.Author)
-                        .Where(c => c.PostId == postId)
+                        .Where(c => c.PostId == id)
                         .OrderByDescending(c => c.PostDate)
                         .Skip(startIndex)
                         .Take(count)
@@ -110,8 +102,8 @@ public static class PostApiEndpoints
                     return Results.Ok(comments);
                 });
 
-            endpoints.MapPost("/api/posts/{id:guid}/comments",
-                async (Guid id, CreateCommentDto request, HttpContext httpContext,
+            endpoints.MapPost(ApiRoute.Templates.PostComments,
+                async (PostId id, CreateCommentDto request, HttpContext httpContext,
                     IDbContextFactory<ContentDbContext> dbContextFactory, CancellationToken ct) =>
                 {
                     var user = httpContext.User;
@@ -128,10 +120,9 @@ public static class PostApiEndpoints
 
                     await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
-                    var postId = PostId.Parse(id);
                     var userId = UserId.Parse(userIdClaim);
 
-                    var postExists = await dbContext.Posts.AnyAsync(p => p.Id == postId, ct);
+                    var postExists = await dbContext.Posts.AnyAsync(p => p.Id == id, ct);
                     if (!postExists)
                     {
                         return Results.NotFound();
@@ -139,7 +130,7 @@ public static class PostApiEndpoints
 
                     var comment = new Comment
                     {
-                        PostId = postId,
+                        PostId = id,
                         AuthorID = userId,
                         Content = request.Content,
                         PostDate = DateTime.Now
@@ -148,15 +139,15 @@ public static class PostApiEndpoints
                     await dbContext.SaveChangesAsync(ct);
 
                     await dbContext.PostMetadatas
-                        .Where(m => m.PostId == postId)
+                        .Where(m => m.PostId == id)
                         .ExecuteUpdateAsync(s => s
                             .SetProperty(m => m.CommentCount, m => m.CommentCount + 1), ct);
 
                     return Results.Ok();
                 });
 
-            endpoints.MapPost("/api/posts/{id:guid}/vote",
-                async (Guid id, VoteRequestDto request, HttpContext httpContext,
+            endpoints.MapPost(ApiRoute.Templates.PostVote,
+                async (PostId id, VoteRequestDto request, HttpContext httpContext,
                     IDbContextFactory<ContentDbContext> dbContextFactory, CancellationToken ct) =>
                 {
                     var user = httpContext.User;
@@ -173,17 +164,16 @@ public static class PostApiEndpoints
 
                     await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
-                    var postId = PostId.Parse(id);
                     var userId = UserId.Parse(userIdClaim);
 
                     var vote = await dbContext.Votes
-                        .FirstOrDefaultAsync(v => v.PostId == postId && v.UserId == userId, ct);
+                        .FirstOrDefaultAsync(v => v.PostId == id && v.UserId == userId, ct);
 
                     if (vote is null)
                     {
                         vote = new Vote
                         {
-                            PostId = postId,
+                            PostId = id,
                             UserId = userId,
                             IsUpvote = request.IsUpvote,
                             IsActive = true,
@@ -209,27 +199,17 @@ public static class PostApiEndpoints
 
                     await dbContext.SaveChangesAsync(ct);
 
-                    await dbContext.UpdateVoteMetadataAsync(postId);
+                    await dbContext.UpdateVoteMetadataAsync(id);
 
-                    var metadata = await dbContext.PostMetadatas.FirstOrDefaultAsync(m => m.PostId == postId, ct);
-
-                    return Results.Ok(new VoteResponseDto
-                    {
-                        IsUpvote = vote.IsUpvote,
-                        IsActive = vote.IsActive,
-                        NetVotes = metadata?.NetVotes ?? 0,
-                        Upvotes = metadata?.Upvotes ?? 0,
-                        Downvotes = metadata?.Downvotes ?? 0
-                    });
+                    return Results.Ok();
                 });
 
-            endpoints.MapPost("/api/posts/{id:guid}/view",
-                async (Guid id, HttpContext httpContext,
+            endpoints.MapPost(ApiRoute.Templates.PostView,
+                async (PostId id, HttpContext httpContext,
                     IDbContextFactory<ContentDbContext> dbContextFactory, CancellationToken ct) =>
                 {
                     await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
-                    var postId = PostId.Parse(id);
                     var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString();
 
                     var user = httpContext.User;
@@ -243,7 +223,7 @@ public static class PostApiEndpoints
                         }
                     }
 
-                    await dbContext.RecordUserViewAsync(postId, ipAddress, userId);
+                    await dbContext.RecordUserViewAsync(id, ipAddress, userId);
                     return Results.Ok();
                 });
 

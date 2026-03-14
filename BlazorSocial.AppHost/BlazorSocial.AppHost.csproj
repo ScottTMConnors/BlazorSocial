@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BlazorSocial.csproj" />
+    <ProjectReference Include="..\BlazorSocial.Client\BlazorSocial.Client.csproj" />
   </ItemGroup>
 
 </Project>

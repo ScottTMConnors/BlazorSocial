@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Using Include="BlazorSocial.Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Ardalis.SmartEnum" />
     <PackageReference Include="Ardalis.SmartEnum.EFCore" />
     <PackageReference Include="EFCore.BulkExtensions" />

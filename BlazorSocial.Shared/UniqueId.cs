@@ -1,13 +1,15 @@
 using System.ComponentModel;
 using System.Globalization;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
-namespace BlazorSocial.Data;
+namespace BlazorSocial.Shared;
 
 /// <summary>
 ///     Abstract base class for all strongly-typed entity IDs.
 ///     Uses UUIDv7 (time-ordered) to minimize index fragmentation on clustered indexes.
 /// </summary>
+[JsonConverter(typeof(UniqueIdJsonConverterFactory))]
 public abstract class UniqueId : IEquatable<UniqueId>, IComparable<UniqueId>
 {
     public Guid Value { get; init; }
@@ -35,7 +37,7 @@ public abstract class UniqueId : IEquatable<UniqueId>, IComparable<UniqueId>
 ///     Generic base that adds typed static factory methods via CRTP.
 ///     Inherit from this to create a new strongly-typed ID: <c>public sealed class MyId : UniqueId&lt;MyId&gt; { }</c>
 /// </summary>
-public abstract class UniqueId<TSelf> : UniqueId, IEquatable<TSelf>, IComparable<TSelf>
+public abstract class UniqueId<TSelf> : UniqueId, IEquatable<TSelf>, IComparable<TSelf>, IParsable<TSelf>
     where TSelf : UniqueId<TSelf>, new()
 {
     public static readonly TSelf Empty = new() { Value = Guid.Empty };
@@ -61,6 +63,9 @@ public abstract class UniqueId<TSelf> : UniqueId, IEquatable<TSelf>, IComparable
 
     public override bool Equals(object? obj) => obj is TSelf other && Equals(other);
     public override int GetHashCode() => Value.GetHashCode();
+
+    static TSelf IParsable<TSelf>.Parse(string s, IFormatProvider? provider) => Parse(s);
+    static bool IParsable<TSelf>.TryParse(string? s, IFormatProvider? provider, out TSelf result) => TryParse(s, out result);
 }
 
 // Concrete typed IDs — all logic is inherited from UniqueId<TSelf>
@@ -86,18 +91,6 @@ public sealed class ViewId : UniqueId<ViewId>
 {
 }
 
-// Single generic EF Core Value Converter for all UniqueId-derived types
-
-public class UniqueIdConverter<TSelf> : ValueConverter<TSelf, Guid>
-    where TSelf : UniqueId<TSelf>, new()
-{
-    public UniqueIdConverter() : base(
-        id => id.Value,
-        guid => new TSelf { Value = guid })
-    {
-    }
-}
-
 /// <summary>
 ///     TypeConverter for <see cref="UserId" /> so ASP.NET Identity can convert between string and UserId
 ///     (used by UserStore.ConvertIdFromString / ConvertIdToString).
@@ -118,4 +111,31 @@ public class UserIdTypeConverter : TypeConverter
         => value is UserId id && destinationType == typeof(string)
             ? id.Value.ToString()
             : base.ConvertTo(context, culture, value, destinationType);
+}
+
+public class UniqueIdJsonConverterFactory : JsonConverterFactory
+{
+    public override bool CanConvert(Type typeToConvert)
+        => !typeToConvert.IsAbstract && typeToConvert.IsAssignableTo(typeof(UniqueId));
+
+    public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
+    {
+        var converterType = typeof(UniqueIdJsonConverter<>).MakeGenericType(typeToConvert);
+        return (JsonConverter)Activator.CreateInstance(converterType)!;
+    }
+}
+
+public class UniqueIdJsonConverter<TSelf> : JsonConverter<TSelf>
+    where TSelf : UniqueId<TSelf>, new()
+{
+    public override TSelf? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        var guid = reader.GetGuid();
+        return UniqueId<TSelf>.Parse(guid);
+    }
+
+    public override void Write(Utf8JsonWriter writer, TSelf value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.Value);
+    }
 }

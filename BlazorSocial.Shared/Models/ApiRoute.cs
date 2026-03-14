@@ -1,19 +1,16 @@
-﻿using Ardalis.SmartEnum;
+﻿namespace BlazorSocial.Shared.Models;
 
-namespace BlazorSocial.Shared.Models;
-
-public class ApiRoute : SmartEnum<ApiRoute, string>
+public static class ApiRoute
 {
-    public static readonly ApiRoute GetPosts = new(nameof(GetPosts), "/api/posts");
-    public static readonly ApiRoute GetPostById = new(nameof(GetPostById), "/api/posts/{id}");
-    public static readonly ApiRoute CreatePost = new(nameof(CreatePost), "/api/posts");
-    public static readonly ApiRoute UpdatePost = new(nameof(UpdatePost), "/api/posts/{id}");
-    public static readonly ApiRoute DeletePost = new(nameof(DeletePost), "/api/posts/{id}");
-    public static readonly ApiRoute VoteOnPost = new(nameof(VoteOnPost), "/api/posts/{id}/vote");
-    public static readonly ApiRoute CommentOnPost = new(nameof(CommentOnPost), "/api/posts/{id}/comments");
-    public static readonly ApiRoute GetCommentsForPost = new(nameof(GetCommentsForPost), "/api/posts/{id}/comments");
-
-    private ApiRoute(string name, string value) : base(name, value)
+    /// <summary>
+    /// Route templates used by both the Refit client interface and server-side endpoint mapping.
+    /// </summary>
+    public static class Templates
     {
+        public const string Posts = "/api/posts";
+        public const string PostById = Posts + "/{id}";
+        public const string PostVote = PostById + "/vote";
+        public const string PostComments = PostById + "/comments";
+        public const string PostView = PostById + "/view";
     }
 }

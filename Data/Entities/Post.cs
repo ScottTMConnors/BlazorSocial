@@ -40,7 +40,7 @@ public static class PostExtensions
         public IQueryable<ViewPostDto> ToViewPostDtos(UserId? currentUserId = null) =>
             query.Select(post => new ViewPostDto
             {
-                PostId = post.Id.Value,
+                PostId = post.Id,
                 Title = post.Title,
                 Content = post.Content,
                 PostDate = post.PostDate,

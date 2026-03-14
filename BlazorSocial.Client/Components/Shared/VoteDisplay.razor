@@ -1,6 +1,6 @@
 ﻿@using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
 @using FilledIcons = Microsoft.FluentUI.AspNetCore.Components.Icons.Filled
-@inject HttpClient Http
+@inject IPostsApi Api
 
 <div class="post-card-actions">
     <div class="post-action-pill glass-pill @(CurrentUserVote == 1 ? "glow-up" : CurrentUserVote == -1 ? "glow-down" : "")">
@@ -32,7 +32,7 @@
     [Parameter] [EditorRequired] public int CurrentUserVote { get; set; }
 
     [Parameter] [EditorRequired] public int Score { get; set; }
-    [Parameter] [EditorRequired] public Guid PostId { get; set; }
+    [Parameter] [EditorRequired] public PostId PostId { get; set; } = PostId.Empty;
 
     [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
 
@@ -104,6 +104,6 @@
         return SendVote(isUpvote);
     }
 
-    private Task SendVote(bool isUpvote) => Http.PostAsJsonAsync($"api/posts/{PostId:N}/vote", new VoteRequestDto { IsUpvote = isUpvote });
+    private Task SendVote(bool isUpvote) => Api.VoteOnPostAsync(PostId, new VoteRequestDto { IsUpvote = isUpvote });
 
 }
