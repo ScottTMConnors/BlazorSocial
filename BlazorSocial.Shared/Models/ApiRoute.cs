@@ -12,5 +12,7 @@ public static class ApiRoute
         public const string PostVote = PostById + "/vote";
         public const string PostComments = PostById + "/comments";
         public const string PostView = PostById + "/view";
+        public const string Login = "/api/account/login";
+        public const string ExternalLogin = "/api/account/external-login";
     }
 }

@@ -20,6 +20,7 @@ builder.AddServiceDefaults();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents()
     .AddAuthenticationStateSerialization();
 
@@ -126,10 +127,12 @@ app.MapStaticAssets();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(BlazorSocialClient).Assembly);
 
 app.MapPostApiEndpoints();
+app.MapAccountApiEndpoints();
 
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
@@ -138,4 +141,6 @@ app.MapDefaultEndpoints();
 
 app.Run();
 
-public partial class Program { }
+public partial class Program
+{
+}

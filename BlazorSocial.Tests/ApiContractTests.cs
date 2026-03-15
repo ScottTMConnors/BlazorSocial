@@ -56,6 +56,16 @@ public class ApiContractTests
             $"IPostsApi.{methodName} ({httpMethod} {route}) has no matching constant in ApiRoute.Templates");
     }
 
+    /// <summary>
+    /// Routes consumed by non-Refit endpoints (e.g. AccountApiEndpoints)
+    /// that should be excluded from the IPostsApi coverage check.
+    /// </summary>
+    private static readonly IReadOnlySet<string> NonRefitRoutes = new HashSet<string>
+    {
+        ApiRoute.Templates.Login,
+        ApiRoute.Templates.ExternalLogin
+    };
+
     [Fact]
     public void ApiRouteTemplates_AllTemplates_UsedByAtLeastOneApiMethod()
     {
@@ -65,7 +75,7 @@ public class ApiContractTests
             .Where(p => p is not null)
             .ToHashSet()!;
 
-        var unused = AllTemplates.Except(usedRoutes).ToList();
+        var unused = AllTemplates.Except(usedRoutes).Except(NonRefitRoutes).ToList();
 
         Assert.Empty(unused);
     }

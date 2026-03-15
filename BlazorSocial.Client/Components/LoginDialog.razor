@@ -1,0 +1,217 @@
+@using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<FluentDialog @ref="_dialog" Modal="true" TrapFocus="true" PreventScroll="true"
+              Style="padding: 0 !important; overflow: hidden; border-radius: 16px; min-width: 440px; max-width: 440px; background: #1c1c1c !important; border: none !important; box-shadow: 0 16px 48px rgba(0,0,0,0.5);">
+    <div style="background: #1c1c1c; color: #d7dadc; padding: 32px 40px 40px; position: relative; border-radius: 16px;">
+
+        @* ── Close button ── *@
+        <FluentButton Appearance="ButtonAppearance.Subtle"
+                      IconStart="@(new Size20.Dismiss())"
+                      OnClick="HideAsync"
+                      title="Close"
+                      Style="position: absolute; top: 12px; right: 12px; border-radius: 50%; background: #272729; color: #fff; min-width: 36px; width: 36px; height: 36px; padding: 0; border: none;"/>
+
+        @* ── Title ── *@
+        <FluentLabel Typo="Typography.H4"
+                     Style="text-align: center; display: block; color: #ffffff; font-weight: 700; margin-bottom: 10px;">
+            Log In
+        </FluentLabel>
+
+        @* ── Legal text ── *@
+        <FluentLabel Style="text-align: center; display: block; font-size: 13px; color: #818384; margin-bottom: 24px; line-height: 1.5;">
+            By continuing, you agree to our
+            <a href="/legal/user-agreement" style="color: #0095C8; text-decoration: none;">User Agreement</a>
+            and acknowledge that you understand the
+            <a href="/legal/privacy-policy" style="color: #0095C8; text-decoration: none;">Privacy Policy</a>.
+        </FluentLabel>
+
+        @* ── SSO provider buttons ── *@
+        <FluentStack Orientation="Orientation.Vertical" VerticalGap="8px" Style="margin-bottom: 4px;">
+            <FluentButton Appearance="ButtonAppearance.Outline"
+                          OnClick="@(() => ExternalLogin("Google"))"
+                          Style="width: 100%; border-radius: 9999px; height: 48px; font-weight: 600; font-size: 15px; border: 1px solid #818384; color: #d7dadc; background: transparent;">
+                <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center" HorizontalGap="12px" Style="width: 100%; justify-content: center;">
+                    <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.07 24.07 0 0 0 0 21.56l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                    <span>Continue with Google</span>
+                </FluentStack>
+            </FluentButton>
+
+            <FluentButton Appearance="ButtonAppearance.Outline"
+                          OnClick="@(() => ExternalLogin("Apple"))"
+                          Style="width: 100%; border-radius: 9999px; height: 48px; font-weight: 600; font-size: 15px; border: 1px solid #818384; color: #d7dadc; background: transparent;">
+                <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center" HorizontalGap="12px" Style="width: 100%; justify-content: center;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#ffffff"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+                    <span>Continue with Apple</span>
+                </FluentStack>
+            </FluentButton>
+
+            <FluentButton Appearance="ButtonAppearance.Outline"
+                          OnClick="@(() => ExternalLogin("Microsoft"))"
+                          Style="width: 100%; border-radius: 9999px; height: 48px; font-weight: 600; font-size: 15px; border: 1px solid #818384; color: #d7dadc; background: transparent;">
+                <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center" HorizontalGap="12px" Style="width: 100%; justify-content: center;">
+                    <svg width="20" height="20" viewBox="0 0 23 23"><rect fill="#f25022" x="1" y="1" width="10" height="10"/><rect fill="#00a4ef" x="1" y="12" width="10" height="10"/><rect fill="#7fba00" x="12" y="1" width="10" height="10"/><rect fill="#ffb900" x="12" y="12" width="10" height="10"/></svg>
+                    <span>Continue with Microsoft</span>
+                </FluentStack>
+            </FluentButton>
+        </FluentStack>
+
+        @* ── OR divider ── *@
+        <div style="display: flex; align-items: center; margin: 20px 0;">
+            <FluentDivider style="flex: 1; border-color: #343536;"/>
+            <FluentLabel Style="color: #818384; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; padding: 0 12px; flex-shrink: 0;">
+                OR
+            </FluentLabel>
+            <FluentDivider style="flex: 1; border-color: #343536;"/>
+        </div>
+
+        @* ── Error ── *@
+        @if (_errorMessage is not null)
+        {
+            <div style="background: rgba(255,69,0,0.15); color: #ff6534; border: 1px solid rgba(255,69,0,0.4); border-radius: 6px; padding: 10px 14px; margin-bottom: 16px; font-size: 14px; line-height: 1.4;">
+                @_errorMessage
+            </div>
+        }
+
+        @* ── Login form with proper autocomplete hints ── *@
+        <form @onsubmit="LoginAsync" @onsubmit:preventDefault autocomplete="on">
+
+            @* ── Email field ── *@
+            <div class="ld-dark-input" style="background: #272729; border: 1px solid @(EmailValid ? "#46d160" : "#343536"); border-radius: 20px; padding: 10px 16px; margin-bottom: 12px; transition: border-color 0.15s;">
+                <FluentLabel Style="font-size: 12px; color: #818384; display: block; margin-bottom: 2px;">
+                    Email or username&nbsp;<span style="color: #ff4500;">*</span>
+                </FluentLabel>
+                <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center" HorizontalGap="8px">
+                    <FluentTextInput @bind-Value="_email"
+                                     TextInputType="TextInputType.Email"
+                                     Disabled="_loading"
+                                     name="email"
+                                     autocomplete="username"
+                                     Style="flex: 1; font-size: 16px;"/>
+                    @if (EmailValid)
+                    {
+                        <FluentIcon Value="@(new Size20.CheckmarkCircle())" Color="Color.Custom" CustomColor="#46d160"/>
+                    }
+                </FluentStack>
+            </div>
+
+            @* ── Password field ── *@
+            <div class="ld-dark-input" style="background: #272729; border: 1px solid @(PasswordValid ? "#46d160" : "#343536"); border-radius: 20px; padding: 10px 16px; margin-bottom: 12px; transition: border-color 0.15s;">
+                <FluentLabel Style="font-size: 12px; color: #818384; display: block; margin-bottom: 2px;">
+                    Password&nbsp;<span style="color: #ff4500;">*</span>
+                </FluentLabel>
+                <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center" HorizontalGap="8px">
+                    <FluentTextInput @bind-Value="_password"
+                                     TextInputType="TextInputType.Password"
+                                     Disabled="_loading"
+                                     name="password"
+                                     autocomplete="current-password"
+                                     Style="flex: 1; font-size: 16px;"/>
+                    @if (PasswordValid)
+                    {
+                        <FluentIcon Value="@(new Size20.CheckmarkCircle())" Color="Color.Custom" CustomColor="#46d160"/>
+                    }
+                </FluentStack>
+            </div>
+
+            @* ── Forgot password ── *@
+            <a href="/Account/ForgotPassword"
+               style="color: #0095C8; text-decoration: none; font-weight: 600; font-size: 14px; display: block; margin-top: 4px;"
+               @onclick="HideAsync" @onclick:preventDefault="false">
+                Forgot password?
+            </a>
+
+            @* ── Sign up ── *@
+            <FluentLabel Style="display: block; font-size: 14px; color: #d7dadc; margin: 10px 0 0;">
+                New to BlazorSocial?&nbsp;<a href="/Account/Register"
+                                             style="color: #0095C8; text-decoration: none; font-weight: 600;"
+                                             @onclick="HideAsync"
+                                             @onclick:preventDefault="false">Sign Up</a>
+            </FluentLabel>
+
+            @* ── Submit ── *@
+            <FluentButton Loading="_loading"
+                          Type="ButtonType.Submit"
+                          Style="width: 100%; border-radius: 9999px; background: #FF4500; color: #ffffff; font-weight: 700; font-size: 18px; height: 52px; border: none; margin-top: 16px;">
+                Log In
+            </FluentButton>
+
+        </form>
+
+    </div>
+</FluentDialog>
+
+@code {
+    private FluentDialog? _dialog;
+    private string _email = "";
+    private string _password = "";
+    private bool _rememberMe;
+    private bool _loading;
+    private string? _errorMessage;
+
+    private bool EmailValid => !string.IsNullOrWhiteSpace(_email);
+    private bool PasswordValid => !string.IsNullOrWhiteSpace(_password);
+
+    public async Task ShowAsync()
+    {
+        _email = "";
+        _password = "";
+        _rememberMe = false;
+        _errorMessage = null;
+        _loading = false;
+        await (_dialog?.ShowAsync() ?? Task.CompletedTask);
+    }
+
+    private async Task HideAsync()
+    {
+        await (_dialog?.HideAsync() ?? Task.CompletedTask);
+    }
+
+    private void ExternalLogin(string provider)
+    {
+        var returnUrl = Uri.EscapeDataString(Nav.Uri);
+        Nav.NavigateTo($"{ApiRoute.Templates.ExternalLogin}?provider={provider}&returnUrl={returnUrl}", forceLoad: true);
+    }
+
+    private async Task LoginAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_email) || string.IsNullOrWhiteSpace(_password))
+        {
+            _errorMessage = "Email and password are required.";
+            return;
+        }
+
+        _loading = true;
+        _errorMessage = null;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync(ApiRoute.Templates.Login, new LoginRequestDto
+            {
+                Email = _email,
+                Password = _password,
+                RememberMe = _rememberMe
+            });
+
+            var result = await response.Content.ReadFromJsonAsync<LoginResultDto>();
+
+            if (result?.Succeeded == true)
+            {
+                Nav.NavigateTo(Nav.Uri, forceLoad: true);
+            }
+            else
+            {
+                _errorMessage = result?.Error ?? "Invalid login attempt.";
+            }
+        }
+        catch
+        {
+            _errorMessage = "An error occurred. Please try again.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

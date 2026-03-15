@@ -794,3 +794,32 @@ fluent-stack-vertical {
 .post-form {
     width: 70% !important;
 }
+
+/* ===== LoginDialog Dark Theme ===== */
+
+/* Make FluentTextInput transparent inside dark input wrappers */
+.ld-dark-input input,
+.ld-dark-input [role="textbox"],
+.ld-dark-input fluent-text-input,
+.ld-dark-input fluent-text-input::part(root),
+.ld-dark-input fluent-text-input::part(control) {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    color: #d7dadc !important;
+    padding: 0 !important;
+}
+
+/* Catch-all for any rendered input inside the dark wrapper */
+.ld-dark-input * {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.ld-dark-input input {
+    color: #d7dadc !important;
+    font-size: 16px !important;
+    caret-color: #d7dadc;
+}
