@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/Solution Items/" />
+  <Project Path="BlazorSocial.csproj" />
+  <Project Path="BlazorSocial.Client/BlazorSocial.Client.csproj" />
+  <Project Path="BlazorSocial.Shared/BlazorSocial.Shared.csproj" />
+  <Project Path="BlazorSocial.ServiceDefaults/BlazorSocial.ServiceDefaults.csproj" />
+  <Project Path="BlazorSocial.AppHost/BlazorSocial.AppHost.csproj" />
+  <Project Path="BlazorSocial.Tests/BlazorSocial.Tests.csproj" />
+</Solution>

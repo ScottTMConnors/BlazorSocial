@@ -3,7 +3,7 @@
 @implements IAsyncDisposable
 
 @inject IPostsApi Api
-@inject IJSRuntime JS
+@inject IJSRuntime Js
 
 @if (_isLoaded)
 {
@@ -17,22 +17,13 @@
             <FluentLabel Size="LabelSize.Medium" Color="Color.Default">@_post.PostDate</FluentLabel>
             <FluentLabel Size="LabelSize.Medium" Color="Color.Default">Views: @_post.ViewCount</FluentLabel>
             <FluentDivider style="margin:12px 0;"/>
-            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="4px" VerticalAlignment="VerticalAlignment.Center">
-                @if (_post.IsAuthenticated)
-                {
-                    <FluentButton Appearance="ButtonAppearance.Transparent"
-                                  IconStart="@(new Size20.ArrowUp())"
-                                  Title="Upvote"
-                                  style="@(_isUpvote && _isVoteActive ? "color:var(--warning);" : "")"
-                                  @onclick="Upvote"/>
-                    <FluentButton Appearance="ButtonAppearance.Transparent"
-                                  IconStart="@(new Size20.ArrowDown())"
-                                  Title="Downvote"
-                                  style="@(!_isUpvote && _isVoteActive ? "color:purple;" : "")"
-                                  @onclick="Downvote"/>
-                }
+            <div class="post-card-actions">
                 <VoteDisplay CurrentUserVote="@_post.CurrentUserVote" Score="@_post.NetVotes" PostId="@_post.PostId"/>
-            </FluentStack>
+                <div class="post-action-pill glass-pill">
+                    <FluentIcon Value="@(new Size20.Comment())" Color="@Color.Default"/>
+                    <span class="post-action-count">@_post.CommentCount</span>
+                </div>
+            </div>
         </FluentCard>
 
         <FluentDivider style="width:100%;"/>
@@ -78,12 +69,6 @@ else
     [Parameter] public PostId PostId { get; set; } = PostId.Empty;
 
     private PostDetailsDto _post = default!;
-    private bool _isUpvote;
-    private bool _isDownvote;
-    private bool _isVoteActive;
-    private int _netVotes;
-    private int _upvotes;
-    private int _downvotes;
     private bool _isLoaded;
     private bool _loadFailed;
 
@@ -115,12 +100,7 @@ else
         }
 
         _post = post;
-        _isUpvote = post.CurrentUserVote == 1;
-        _isDownvote = post.CurrentUserVote == -1;
-        _isVoteActive = post.CurrentUserVote != 0;
-        _netVotes = post.NetVotes;
-        _upvotes = post.Upvotes;
-        _downvotes = post.Downvotes;
+
         _isLoaded = true;
     }
 
@@ -134,7 +114,7 @@ else
             await LoadMoreComments();
             StateHasChanged();
 
-            await using var jsModule = await JS.InvokeAsync<IJSObjectReference>(
+            await using var jsModule = await Js.InvokeAsync<IJSObjectReference>(
                 "import", CancellationToken, "./js/ViewPosts.js");
             _module = await jsModule.InvokeAsync<IJSObjectReference>(
                 "createScrollObserver", CancellationToken);
@@ -209,37 +189,6 @@ else
         }
 
         return $"{(int)difference.TotalSeconds}s";
-    }
-
-    private async Task Upvote()
-    {
-        await UpdateVote(true);
-    }
-
-    private async Task Downvote()
-    {
-        await UpdateVote(false);
-    }
-
-    private async Task UpdateVote(bool isUpvote)
-    {
-        if (_isUpvote == isUpvote && _isVoteActive)
-        {
-            _isVoteActive = false;
-        }
-        else
-        {
-            _isVoteActive = true;
-            _isUpvote = isUpvote;
-        }
-
-        var result = await Api.VoteOnPostAsync(PostId, new VoteRequestDto { IsUpvote = isUpvote }, CancellationToken);
-
-        _isUpvote = result.IsUpvote;
-        _isVoteActive = result.IsActive;
-        _netVotes = result.NetVotes;
-        _upvotes = result.Upvotes;
-        _downvotes = result.Downvotes;
     }
 
     public async ValueTask DisposeAsync()

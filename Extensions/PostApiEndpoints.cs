@@ -65,6 +65,7 @@ public static class PostApiEndpoints
                             NetVotes = post.PostMetadata.NetVotes,
                             Upvotes = post.PostMetadata.Upvotes,
                             Downvotes = post.PostMetadata.Downvotes,
+                            CommentCount = post.PostMetadata.CommentCount,
                             CurrentUserVote = userId == null
                                 ? 0
                                 : post.Votes

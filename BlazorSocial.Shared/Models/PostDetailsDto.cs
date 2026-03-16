@@ -12,4 +12,5 @@ public record PostDetailsDto
     public int Downvotes { get; init; }
     public bool IsAuthenticated { get; init; }
     public int CurrentUserVote { get; init; }
+    public int CommentCount { get; init; }
 }

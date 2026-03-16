@@ -11,7 +11,7 @@ public interface IPostsApi
     Task<PostDetailsDto> GetPostByIdAsync(PostId id, CancellationToken cancellationToken = default);
 
     [Post(ApiRoute.Templates.PostVote)]
-    Task<VoteResponseDto> VoteOnPostAsync(PostId id, [Body] VoteRequestDto request, CancellationToken cancellationToken = default);
+    Task VoteOnPostAsync(PostId id, [Body] VoteRequestDto request, CancellationToken cancellationToken = default);
 
     [Post(ApiRoute.Templates.PostComments)]
     Task CommentOnPostAsync(PostId id, [Body] CreateCommentDto request, CancellationToken cancellationToken = default);
