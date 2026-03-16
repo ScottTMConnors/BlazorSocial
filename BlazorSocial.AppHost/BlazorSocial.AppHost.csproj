@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Sdk Name="Aspire.AppHost.Sdk" Version="13.1.2" />
 
@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BlazorSocial.csproj" />
+    <ProjectReference Include="..\BlazorSocial.WebServer\BlazorSocial.WebServer.csproj" />
     <ProjectReference Include="..\BlazorSocial.Client\BlazorSocial.Client.csproj" />
   </ItemGroup>
 

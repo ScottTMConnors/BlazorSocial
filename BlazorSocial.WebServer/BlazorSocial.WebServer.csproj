@@ -4,6 +4,7 @@
     <TargetFramework>net11.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>BlazorSocial</RootNamespace>
     <UserSecretsId>aspnet-BlazorSocial-fb39b1bc-0cfa-4ce4-8033-356283aaaaba</UserSecretsId>
   </PropertyGroup>
 
@@ -33,37 +34,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="BlazorSocial.AppHost\**" />
-    <Compile Remove="BlazorSocial.Client\**" />
-    <Compile Remove="BlazorSocial.ServiceDefaults\**" />
-    <Compile Remove="BlazorSocial.Shared\**" />
-    <Compile Remove="BlazorSocial.Tests\**" />
     <Compile Remove="Data\Migrations\**" />
     <Compile Remove="Migrations\**" />
-    <Content Remove="BlazorSocial.AppHost\**" />
-    <Content Remove="BlazorSocial.Client\**" />
-    <Content Remove="BlazorSocial.ServiceDefaults\**" />
-    <Content Remove="BlazorSocial.Shared\**" />
-    <Content Remove="BlazorSocial.Tests\**" />
     <Content Remove="Data\Migrations\**" />
     <Content Remove="Migrations\**" />
-    <EmbeddedResource Remove="BlazorSocial.AppHost\**" />
-    <EmbeddedResource Remove="BlazorSocial.ServiceDefaults\**" />
-    <EmbeddedResource Remove="BlazorSocial.Shared\**" />
-    <EmbeddedResource Remove="BlazorSocial.Tests\**" />
     <EmbeddedResource Remove="Data\Migrations\**" />
     <EmbeddedResource Remove="Migrations\**" />
-    <None Remove="BlazorSocial.AppHost\**" />
-    <None Remove="BlazorSocial.Client\**" />
-    <None Remove="BlazorSocial.ServiceDefaults\**" />
-    <None Remove="BlazorSocial.Shared\**" />
-    <None Remove="BlazorSocial.Tests\**" />
     <None Remove="Data\Migrations\**" />
     <None Remove="Migrations\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include=".github\copilot-instructions.md" />
   </ItemGroup>
 
   <!--
@@ -80,9 +58,9 @@
   </Target>
 
   <ItemGroup>
-    <ProjectReference Include="BlazorSocial.Client\BlazorSocial.Client.csproj" />
-    <ProjectReference Include="BlazorSocial.ServiceDefaults\BlazorSocial.ServiceDefaults.csproj" />
-    <ProjectReference Include="BlazorSocial.Shared\BlazorSocial.Shared.csproj" />
+    <ProjectReference Include="..\BlazorSocial.Client\BlazorSocial.Client.csproj" />
+    <ProjectReference Include="..\BlazorSocial.ServiceDefaults\BlazorSocial.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\BlazorSocial.Shared\BlazorSocial.Shared.csproj" />
   </ItemGroup>
 
 </Project>

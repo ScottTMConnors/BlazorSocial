@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BlazorSocial.csproj" />
+    <ProjectReference Include="..\BlazorSocial.WebServer\BlazorSocial.WebServer.csproj" />
     <ProjectReference Include="..\BlazorSocial.Shared\BlazorSocial.Shared.csproj" />
   </ItemGroup>
 

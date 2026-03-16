@@ -2,22 +2,25 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <base href="/" />
-    <link rel="stylesheet" href="@Assets["bootstrap/bootstrap.min.css"]" />
-    <link rel="stylesheet" href="@Assets["bootstrap/bootstrap-icons.min.css"]" />
-    <link rel="stylesheet" href="@Assets["app.css"]" />
-    <link rel="stylesheet" href="@Assets["_content/Microsoft.FluentUI.AspNetCore.Components/css/reboot.css"]" />
-    <link rel="icon" type="image/png" href="@Assets["favicon.png"]" />
-    <HeadOutlet />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <base href="/"/>
+    <ResourcePreloader/>
+    <link rel="stylesheet" href="@Assets["bootstrap/bootstrap.min.css"]"/>
+    <link rel="stylesheet" href="@Assets["bootstrap/bootstrap-icons.min.css"]"/>
+    <link rel="stylesheet" href="@Assets["app.css"]"/>
+    <link rel="stylesheet" href="@Assets["_content/Microsoft.FluentUI.AspNetCore.Components/css/reboot.css"]"/>
+    <ImportMap/>
+    <link rel="icon" type="image/png" href="@Assets["favicon.png"]"/>
+    <HeadOutlet/>
 </head>
 
 <body data-theme="light">
-    <FluentTooltipProvider />
-    <Routes />
-    <script src="@Assets["_framework/blazor.web.js"]"></script>
-    <script>
+<FluentTooltipProvider/>
+<AppRoutes/>
+<script src="@Assets["_framework/blazor.web.js"]"></script>
+
+<script>
         // Workaround for https://github.com/microsoft/fluentui-blazor/issues
         // .NET 11 disallows registerCustomEventType where eventName === browserEventName.
         // FluentUI registers 'listboxchange' this way; skip those calls so the app starts cleanly.
@@ -35,3 +38,6 @@
 </body>
 
 </html>
+
+@code {
+}

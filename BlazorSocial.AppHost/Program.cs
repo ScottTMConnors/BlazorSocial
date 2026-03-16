@@ -6,7 +6,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 var sql = builder.AddSqlServer("sql")
     .AddDatabase("ContentDatabase");
 
-builder.AddProject<BlazorSocial>("blazorsocial")
+builder.AddProject<BlazorSocial_WebServer>("blazorsocial")
     .WithReference(sql)
     .WaitFor(sql)
     .WithUrls(context => context.Urls.Add(new ResourceUrlAnnotation
