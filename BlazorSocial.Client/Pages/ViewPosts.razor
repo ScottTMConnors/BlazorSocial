@@ -1,5 +1,5 @@
-@page "/"
-@page "/ViewPosts"
+@attribute [Route(NavigationRoute.Home)]
+@attribute [Route($"/{NavigationRoute.ViewPosts}")]
 
 @rendermode @(new InteractiveWebAssemblyRenderMode(false))
 @using BlazorSocial.Client.Components.Shared

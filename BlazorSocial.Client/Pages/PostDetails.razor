@@ -1,4 +1,4 @@
-@page "/PostDetails/{IdParam}"
+@attribute [Route($"/{NavigationRoute.PostDetailsTemplate}")]
 
 @rendermode @(new InteractiveWebAssemblyRenderMode(false))
 
@@ -21,7 +21,7 @@
     {
         if (string.IsNullOrEmpty(IdParam) || !PostId.TryParse(IdParam, out var postId))
         {
-            NavigationManager.NavigateTo("/ViewPosts");
+            NavigationManager.NavigateTo($"/{NavigationRoute.ViewPosts}");
             return;
         }
 
