@@ -1,0 +1,20 @@
+@using Microsoft.FluentUI.AspNetCore.Components.Icons.Filled
+@inject IJSRuntime JSRuntime
+
+<FluentButton Appearance="ButtonAppearance.Subtle"
+              IconOnly="true"
+              Class="fluent-header-hover"
+              Title="Switch to Light/Dark theme"
+              OnClick="@SwitchThemeAsync">
+    <FluentIcon Class="hidden-if-light"
+                Value="@(new Size20.WeatherSunny())" />
+    <FluentIcon Class="hidden-if-dark"
+                Value="@(new Size20.WeatherMoon())" />
+</FluentButton>
+
+@code {
+    private async Task SwitchThemeAsync()
+    {
+        await JSRuntime.InvokeVoidAsync("Blazor.theme.switchTheme");
+    }
+}

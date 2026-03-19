@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E \"\\\\.\\(css|js\\)$\")",
+      "Bash(find /e/Storage/repos/BlazorSocial -path */_content/* -type f)",
+      "Bash(find /e/Storage/repos/BlazorSocial -name *text-input* -o -name *fluent* -type f)",
+      "Bash(find /c/Users/scott/.nuget/packages/microsoft.fluentui.aspnetcore.components/5.0.0-rc.1-26048.1 -type f -name *.js)",
+      "Bash(find /c/Users/scott/.nuget/packages/microsoft.fluentui.aspnetcore.components/5.0.0-rc.1-26048.1 -type f -name *.razor)",
+      "Bash(grep -o \".{0,100}indicator.{0,100}\\\\|.{0,100}bottom.{0,100}\\\\|.{0,100}focus.{0,100}\")",
+      "Bash(node -e \":*)",
+      "Bash(powershell -Command \":*)"
+    ]
+  }
+}

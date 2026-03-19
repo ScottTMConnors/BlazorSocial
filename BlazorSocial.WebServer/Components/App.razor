@@ -13,9 +13,28 @@
     <ImportMap/>
     <link rel="icon" type="image/png" href="@Assets["favicon.png"]"/>
     <HeadOutlet/>
+    <style>
+        /* Prevent white flash when restoring dark theme */
+        @@media (prefers-color-scheme: dark) {
+            body { background-color: #0d0d0d; color: #ffffff; }
+        }
+    </style>
 </head>
 
-<body data-theme="light">
+<body>
+<script>
+    // Restore saved theme before any content renders (prevents flash)
+    (function () {
+        var saved = localStorage.getItem('theme');
+        if (saved === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+        }
+        // Persist future theme changes
+        document.body.addEventListener('themeChanged', function (e) {
+            localStorage.setItem('theme', e.detail.isDark ? 'dark' : 'light');
+        });
+    })();
+</script>
 <FluentTooltipProvider/>
 <AppRoutes/>
 <script src="@Assets["_framework/blazor.web.js"]"></script>

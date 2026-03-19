@@ -1,3 +1,4 @@
+@using BlazorSocial.Client.Components.Shared
 @using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
 @inject NavigationManager Nav
 
@@ -11,7 +12,7 @@
 
         @* Center: Search bar *@
         <div class="top-nav-search">
-            <FluentTextInput @bind-Value="_searchText" TextInputType="TextInputType.Search" Placeholder="Search BlazorSocial" autocomplete="off" name="nav-search"/>
+            <FluentTextInput @bind-Value="_searchText" TextInputType="TextInputType.Search" Placeholder="Search BlazorSocial" autocomplete="off" name="nav-search" Style="width: 100%;"/>
         </div>
 
         @* Right: Navigation actions *@
@@ -30,20 +31,26 @@
                 <span class="nav-btn-label">Admin</span>
             </FluentButton>
 
+            <ThemeSwitcher/>
+
             @if (IsAuthenticated)
             {
-                <FluentButton Appearance="ButtonAppearance.Subtle"
+                <FluentButton Id="user-menu-btn"
+                              Appearance="ButtonAppearance.Subtle"
                               IconStart="@(new Size20.Person())"
-                              OnClick="@(() => Nav.NavigateTo($"/{NavigationRoute.Account.Manage.Index}"))"
                               title="@UserName">
                     <span class="nav-btn-label">@UserName</span>
                 </FluentButton>
-                <FluentButton Appearance="ButtonAppearance.Subtle"
-                              IconStart="@(new Size20.ArrowExit())"
-                              OnClick="@(() => Nav.NavigateTo($"/{NavigationRoute.Logout}", forceLoad: true, replace: true))"
-                              title="Log Out">
-                    <span class="nav-btn-label">Log Out</span>
-                </FluentButton>
+                <FluentMenu Trigger="user-menu-btn">
+                    <FluentMenuList>
+                        <FluentMenuItem Label="Account Settings"
+                                        IconStart="@(new Size16.PersonSettings())"
+                                        OnClick="@(() => Nav.NavigateTo($"/{NavigationRoute.Account.Manage.Index}"))"/>
+                        <FluentMenuItem Label="Log Off"
+                                        IconStart="@(new Size16.ArrowExit())"
+                                        OnClick="@(() => Nav.NavigateTo($"/{NavigationRoute.Logout}", forceLoad: true, replace: true))"/>
+                    </FluentMenuList>
+                </FluentMenu>
             }
             else
             {

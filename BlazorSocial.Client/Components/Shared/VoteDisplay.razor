@@ -2,30 +2,28 @@
 @using FilledIcons = Microsoft.FluentUI.AspNetCore.Components.Icons.Filled
 @inject IPostsApi Api
 
-<div class="post-card-actions">
-    <div class="post-action-pill glass-pill @(CurrentUserVote == 1 ? "glow-up" : CurrentUserVote == -1 ? "glow-down" : "")">
-        <span class="vote-btn vote-up @(CurrentUserVote == 1 ? "voted" : "")" @onclick="() => VotePost(true)" @onclick:stopPropagation @onclick:preventDefault>
-            @if (CurrentUserVote == 1)
-            {
-                <FluentIcon Value="@(new FilledIcons.Size20.ArrowOutlineUpRight())"/>
-            }
-            else
-            {
-                <FluentIcon Value="@(new Size20.ArrowOutlineUpRight())"/>
-            }
-        </span>
-        <span class="post-action-count">@Score</span>
-        <span class="vote-btn vote-down @(CurrentUserVote == -1 ? "voted" : "")" @onclick="() => VotePost(false)" @onclick:stopPropagation @onclick:preventDefault>
-            @if (CurrentUserVote == -1)
-            {
-                <FluentIcon Value="@(new FilledIcons.Size20.ArrowOutlineDownLeft())"/>
-            }
-            else
-            {
-                <FluentIcon Value="@(new Size20.ArrowOutlineDownLeft())"/>
-            }
-        </span>
-    </div>
+<div class="post-action-pill glass-pill @(CurrentUserVote == 1 ? "glow-up" : CurrentUserVote == -1 ? "glow-down" : "")">
+    <span class="vote-btn vote-up @(CurrentUserVote == 1 ? "voted" : "")" @onclick="() => VotePost(true)" @onclick:stopPropagation @onclick:preventDefault>
+        @if (CurrentUserVote == 1)
+        {
+            <FluentIcon Value="@(new FilledIcons.Size20.ArrowOutlineUpRight())"/>
+        }
+        else
+        {
+            <FluentIcon Value="@(new Size20.ArrowOutlineUpRight())"/>
+        }
+    </span>
+    <span class="post-action-count">@Score</span>
+    <span class="vote-btn vote-down @(CurrentUserVote == -1 ? "voted" : "")" @onclick="() => VotePost(false)" @onclick:stopPropagation @onclick:preventDefault>
+        @if (CurrentUserVote == -1)
+        {
+            <FluentIcon Value="@(new FilledIcons.Size20.ArrowOutlineDownLeft())"/>
+        }
+        else
+        {
+            <FluentIcon Value="@(new Size20.ArrowOutlineDownLeft())"/>
+        }
+    </span>
 </div>
 
 @code {

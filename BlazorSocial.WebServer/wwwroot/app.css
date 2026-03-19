@@ -1,4 +1,4 @@
-/* ===== Base ===== */
+﻿/* ===== Base ===== */
 
 html, body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -158,15 +158,16 @@ main {
     z-index: 100;
     background: var(--neutral-layer-1, #ffffff);
     border-bottom: 1px solid var(--neutral-stroke-divider-rest, #e0e0e0);
-    height: 48px;
+    height: 60px;
     flex-shrink: 0;
 }
 
 .top-nav-inner {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 600px 1fr;
     align-items: center;
     height: 100%;
-    padding: 0 20px;
+    padding: 0 16px;
     gap: 16px;
 }
 
@@ -180,6 +181,7 @@ main {
     font-size: 1.25rem;
     flex-shrink: 0;
     white-space: nowrap;
+    justify-self: start;
 }
 
 .top-nav-brand:hover {
@@ -188,24 +190,57 @@ main {
 }
 
 .top-nav-search {
-    flex: 1;
-    min-width: 0;
-    max-width: 690px;
+    width: 100%;
+    justify-self: center;
 }
 
-.top-nav-search fluent-search {
-    width: 100%;
+.top-nav-search fluent-text-input {
+    display: block;
+    width: 100% !important;
+    max-width: 100% !important;
+    --accent-base-color: transparent;
+    --colorCompoundBrandStroke: transparent !important;
+    --colorCompoundBrandStrokePressed: transparent !important;
+    --colorBrandStroke1: transparent !important;
+}
+
+.top-nav-search fluent-text-input::part(root) {
+    border: 1.5px solid transparent !important;
+    border-bottom: 1.5px solid transparent !important;
+    border-radius: 9999px;
+    background:
+        linear-gradient(#ffffff, #ffffff) padding-box,
+        linear-gradient(135deg, #ff4500, #ff8c00) border-box;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+    height: 44px;
+}
+
+.top-nav-search fluent-text-input::part(control) {
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 1rem;
+}
+
+.top-nav-search:focus-within fluent-text-input::part(root) {
+    box-shadow:
+        0 0 10px rgba(255, 80, 0, 0.5),
+        0 0 24px rgba(255, 140, 0, 0.22);
 }
 
 .top-nav-actions {
     display: flex;
     align-items: center;
+    justify-self: end;
     gap: 4px;
     flex-shrink: 0;
-    margin-left: auto;
 }
 
 @media (max-width: 640px) {
+    .top-nav-search {
+        width: 300px;
+    }
+
     .top-nav-brand .brand-text {
         display: none;
     }
@@ -213,10 +248,35 @@ main {
     .nav-btn-label {
         display: none;
     }
+}
 
-    .top-nav-search {
-        max-width: none;
-    }
+body[data-theme="dark"] .top-nav {
+    background: #0d0d0d;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body[data-theme="dark"] .top-nav-search fluent-text-input::part(root) {
+    background:
+        linear-gradient(#2a2a2a, #2a2a2a) padding-box,
+        linear-gradient(135deg, #ff4500, #ff8c00) border-box;
+}
+
+body[data-theme="dark"] .top-nav-brand {
+    color: #ffffff;
+}
+
+body[data-theme="dark"] .top-nav-brand:hover {
+    color: #ffffff;
+}
+
+body[data-theme="dark"] .top-nav-actions fluent-button::part(control),
+body[data-theme="dark"] .top-nav-actions fluent-button .nav-btn-label {
+    color: #ffffff;
+}
+
+body[data-theme="dark"] .top-nav-actions fluent-button::part(control):hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* ===== ViewPosts ===== */
@@ -284,6 +344,23 @@ main {
     color: #1a1a1b;
 }
 
+body[data-theme="dark"] {
+    background-color: #0d0d0d;
+}
+
+body[data-theme="dark"] .post-card {
+    background-color: #111111;
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+body[data-theme="dark"] .post-card-title {
+    color: #d7dadc;
+}
+
+body[data-theme="dark"] .post-card-content {
+    color: #9a9a9a;
+}
+
 .post-card-actions {
     display: flex;
     align-items: center;
@@ -299,7 +376,7 @@ main {
     padding: 0 6px;
     font-size: 12px;
     font-weight: 600;
-    color: #576f76;
+    color: #788c99;
     line-height: 1;
     cursor: pointer;
     height: 32px;
@@ -578,7 +655,7 @@ main {
 .post-action-count {
     font-size: 12px;
     font-weight: 700;
-    color: #1a1a1b;
+    color: #2e3c43;
     transition: color 0.3s ease;
 }
 
@@ -611,12 +688,12 @@ main {
 }
 
 .vote-btn svg path {
-    fill: #576f76;
+    fill: #788c99;
     transition: fill 0.15s ease;
 }
 
 .vote-btn:hover {
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(100, 130, 180, 0.1);
 }
 
 /* Suppress hover ring when pill is glowing */
@@ -735,6 +812,50 @@ main {
     fill: url(#downvote-gradient);
 }
 
+/* ===== Dark mode pill overrides ===== */
+
+body[data-theme="dark"] .post-action-pill {
+    color: #d7dadc;
+}
+
+body[data-theme="dark"] .post-action-count {
+    color: #d7dadc;
+}
+
+body[data-theme="dark"] .vote-btn svg path {
+    fill: #d7dadc;
+}
+
+body[data-theme="dark"] .post-action-pill svg path {
+    fill: #d7dadc;
+}
+
+body[data-theme="dark"] .vote-btn:hover {
+    background: rgba(150, 170, 210, 0.12);
+}
+
+body[data-theme="dark"] .vote-up:hover svg path {
+    fill: url(#upvote-gradient);
+}
+
+body[data-theme="dark"] .vote-down:hover svg path {
+    fill: url(#downvote-gradient);
+}
+
+body[data-theme="dark"] .glass-pill {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: none;
+}
+
+body[data-theme="dark"] .glass-pill:not(.glow-up):not(.glow-down):hover {
+    background: rgba(255, 255, 255, 0.13);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: none;
+}
+
 .vote-up.voted svg path {
     fill: #fff;
 }
@@ -761,6 +882,10 @@ main {
 
 .fluent-card:hover {
     background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+body[data-theme="dark"] .fluent-card:hover {
+    background-color: rgba(130, 155, 200, 0.06) !important;
 }
 
 .post-card-link,
@@ -822,4 +947,49 @@ fluent-stack-vertical {
     color: #d7dadc !important;
     font-size: 16px !important;
     caret-color: #d7dadc;
+}
+
+/* ===== Dark mode: general page elements ===== */
+
+body[data-theme="dark"] h1,
+body[data-theme="dark"] h2,
+body[data-theme="dark"] h3,
+body[data-theme="dark"] p,
+body[data-theme="dark"] label {
+    color: #d7dadc;
+}
+
+body[data-theme="dark"] hr {
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Dark mode: Bootstrap form controls */
+
+body[data-theme="dark"] .form-control {
+    background-color: #1a1a1b;
+    color: #d7dadc;
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+body[data-theme="dark"] .form-control:focus {
+    background-color: #1a1a1b;
+    color: #d7dadc;
+    border-color: rgba(255, 140, 0, 0.5);
+    box-shadow: 0 0 0 0.25rem rgba(255, 80, 0, 0.25);
+}
+
+body[data-theme="dark"] .form-floating > label {
+    color: #818384;
+}
+
+body[data-theme="dark"] input[type="number"] {
+    background-color: #1a1a1b;
+    color: #d7dadc;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+body[data-theme="dark"] .validation-message {
+    color: #ff6b6b;
 }
