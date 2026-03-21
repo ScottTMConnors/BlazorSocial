@@ -1,6 +1,8 @@
-﻿@using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
+﻿@using BlazorSocial.Client.Services
+@using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
 @using FilledIcons = Microsoft.FluentUI.AspNetCore.Components.Icons.Filled
 @inject IPostsApi Api
+@inject LoginDialogService LoginService
 
 <div class="post-action-pill glass-pill @(CurrentUserVote == 1 ? "glow-up" : CurrentUserVote == -1 ? "glow-down" : "")">
     <span class="vote-btn vote-up @(CurrentUserVote == 1 ? "voted" : "")" @onclick="() => VotePost(true)" @onclick:stopPropagation @onclick:preventDefault>
@@ -47,7 +49,7 @@
     {
         if (!IsAuthenticated)
         {
-            return Task.CompletedTask;
+            return LoginService.ShowAsync();
         }
 
         if (isUpvote)

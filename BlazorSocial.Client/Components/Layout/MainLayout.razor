@@ -2,7 +2,7 @@
 @inherits LayoutComponentBase
 
 <div class="page">
-    <NavMenu @rendermode="InteractiveWebAssembly"
+    <NavMenu @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)"
              UserName="@_userName"
              IsAuthenticated="@_isAuthenticated"/>
 
@@ -16,7 +16,7 @@
     </main>
 </div>
 
-<FluentDialogProvider/>
+<ClientDialogHost @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)"/>
 
 <div id="blazor-error-ui">
     An unhandled error has occurred.

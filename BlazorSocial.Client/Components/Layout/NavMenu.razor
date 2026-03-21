@@ -1,6 +1,8 @@
 @using BlazorSocial.Client.Components.Shared
+@using BlazorSocial.Client.Services
 @using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
 @inject NavigationManager Nav
+@inject LoginDialogService LoginService
 
 <header class="top-nav">
     <div class="top-nav-inner">
@@ -56,15 +58,13 @@
             {
                 <FluentButton Appearance="ButtonAppearance.Primary"
                               Style="border-radius: 9999px; min-width: 80px;"
-                              OnClick="@(() => _loginDialog?.ShowAsync())">
+                              OnClick="@LoginService.ShowAsync">
                     Log In
                 </FluentButton>
             }
         </nav>
     </div>
 </header>
-
-<LoginDialog @ref="_loginDialog"/>
 
 @code {
 
@@ -73,6 +73,5 @@
     [Parameter] public bool IsAuthenticated { get; set; }
 
     private string? _searchText;
-    private LoginDialog? _loginDialog;
 
 }

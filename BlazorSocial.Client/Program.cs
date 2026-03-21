@@ -1,3 +1,4 @@
+using BlazorSocial.Client.Services;
 using BlazorSocial.Shared.Models;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.FluentUI.AspNetCore.Components;
@@ -29,5 +30,5 @@ builder.Services.AddFluentUIComponents(options =>
         return value;
     };
 });
-
+builder.Services.AddScoped<LoginDialogService>();
 await builder.Build().RunAsync();
