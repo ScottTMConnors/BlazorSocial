@@ -11,10 +11,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Using Include="BlazorSocial.Primitives" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Refit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BlazorSocial.Primitives\BlazorSocial.Primitives.csproj" />
+
   </ItemGroup>
 
 </Project>

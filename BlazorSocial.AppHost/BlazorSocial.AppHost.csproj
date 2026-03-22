@@ -13,12 +13,14 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting" />
     <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="Aspire.Hosting.Redis" />
     <PackageReference Include="Aspire.Hosting.SqlServer" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BlazorSocial.Api\BlazorSocial.Api.csproj" />
+    <ProjectReference Include="..\BlazorSocial.Auth\BlazorSocial.Auth.csproj" />
     <ProjectReference Include="..\BlazorSocial.WebServer\BlazorSocial.WebServer.csproj" />
-    <ProjectReference Include="..\BlazorSocial.Client\BlazorSocial.Client.csproj" />
   </ItemGroup>
 
 </Project>

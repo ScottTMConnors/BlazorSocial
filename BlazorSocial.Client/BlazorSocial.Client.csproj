@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BlazorSocial.Auth.Contracts\BlazorSocial.Auth.Contracts.csproj" />
     <ProjectReference Include="..\BlazorSocial.Shared\BlazorSocial.Shared.csproj" />
   </ItemGroup>
 

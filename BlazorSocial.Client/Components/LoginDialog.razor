@@ -1,5 +1,6 @@
 @using Microsoft.FluentUI.AspNetCore.Components.Icons.Regular
-@inject HttpClient Http
+@using BlazorSocial.Auth.Contracts
+@inject IAuthApi AuthApi
 @inject NavigationManager Nav
 
 <FluentDialogBody Style="padding: 0 !important; overflow: hidden; border-radius: 16px; min-width: 440px; max-width: 440px; background: #1c1c1c !important; border: none !important; box-shadow: 0 16px 48px rgba(0,0,0,0.5);">
@@ -174,7 +175,7 @@
     private void ExternalLogin(string provider)
     {
         var returnUrl = Uri.EscapeDataString(Nav.Uri);
-        Nav.NavigateTo($"{ApiRoute.Templates.ExternalLogin}?provider={provider}&returnUrl={returnUrl}", true);
+        Nav.NavigateTo($"/api/account/external-login?provider={provider}&returnUrl={returnUrl}", true);
     }
 
     private async Task LoginAsync()
@@ -190,24 +191,14 @@
 
         try
         {
-            var response = await Http.PostAsJsonAsync(ApiRoute.Templates.Login, new LoginRequestDto
-            {
-                Email = _email,
-                Password = _password,
-                RememberMe = false
-            });
-
-            var result = await response.Content.ReadFromJsonAsync<LoginResultDto>();
-
-            if (result?.Succeeded == true)
-            {
-                await Dialog.CloseAsync();
-                Nav.NavigateTo(Nav.Uri, true);
-            }
-            else
-            {
-                _errorMessage = result?.Error ?? "Invalid login attempt.";
-            }
+            var token = await AuthApi.LoginAsync(new LoginRequestDto { Email = _email, Password = _password });
+            // Token received — reload page so server auth state is updated
+            await Dialog.CloseAsync();
+            Nav.NavigateTo(Nav.Uri, true);
+        }
+        catch (Refit.ApiException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            _errorMessage = "Invalid email or password.";
         }
         catch
         {

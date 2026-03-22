@@ -1,3 +1,4 @@
+using BlazorSocial.Auth.Contracts;
 using BlazorSocial.Client.Services;
 using BlazorSocial.Shared.Models;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -12,6 +13,8 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthenticationStateDeserialization();
 builder.Services.AddRefitClient<IPostsApi>()
+    .ConfigureHttpClient(c => c.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));
+builder.Services.AddRefitClient<IAuthApi>()
     .ConfigureHttpClient(c => c.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));
 builder.Services.AddFluentUIComponents(options =>
 {

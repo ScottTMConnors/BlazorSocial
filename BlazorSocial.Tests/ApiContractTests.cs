@@ -57,13 +57,13 @@ public class ApiContractTests
     }
 
     /// <summary>
-    /// Routes consumed by non-Refit endpoints (e.g. AccountApiEndpoints)
+    /// Routes consumed by non-Refit endpoints (e.g. Auth service)
     /// that should be excluded from the IPostsApi coverage check.
     /// </summary>
     private static readonly IReadOnlySet<string> NonRefitRoutes = new HashSet<string>
     {
-        ApiRoute.Templates.Login,
-        ApiRoute.Templates.ExternalLogin
+        ApiRoute.Auth.Login,
+        ApiRoute.Auth.Register
     };
 
     [Fact]

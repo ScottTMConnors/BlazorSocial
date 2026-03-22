@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
@@ -9,39 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Using Include="BlazorSocial.Shared" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Ardalis.SmartEnum" />
-    <PackageReference Include="Ardalis.SmartEnum.EFCore" />
-    <PackageReference Include="EFCore.BulkExtensions" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
-    <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="Refit.HttpClientFactory" />
+    <PackageReference Include="Yarp.ReverseProxy" />
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" />
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" />
-    <PackageReference Include="NameGenerator" />
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Data\Migrations\**" />
-    <Compile Remove="Migrations\**" />
-    <Content Remove="Data\Migrations\**" />
-    <Content Remove="Migrations\**" />
-    <EmbeddedResource Remove="Data\Migrations\**" />
-    <EmbeddedResource Remove="Migrations\**" />
-    <None Remove="Data\Migrations\**" />
-    <None Remove="Migrations\**" />
   </ItemGroup>
 
   <!--
@@ -58,9 +31,10 @@
   </Target>
 
   <ItemGroup>
+    <ProjectReference Include="..\BlazorSocial.Auth.Contracts\BlazorSocial.Auth.Contracts.csproj" />
     <ProjectReference Include="..\BlazorSocial.Client\BlazorSocial.Client.csproj" />
+    <ProjectReference Include="..\BlazorSocial.Infrastructure\BlazorSocial.Infrastructure.csproj" />
     <ProjectReference Include="..\BlazorSocial.ServiceDefaults\BlazorSocial.ServiceDefaults.csproj" />
-    <ProjectReference Include="..\BlazorSocial.Shared\BlazorSocial.Shared.csproj" />
   </ItemGroup>
 
 </Project>

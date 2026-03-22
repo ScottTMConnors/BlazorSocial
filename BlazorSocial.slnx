@@ -5,10 +5,17 @@
     <File Path="LICENSE.txt" />
     <File Path=".gitignore" />
   </Folder>
+  <Project Path="BlazorSocial.Api/BlazorSocial.Api.csproj" />
+  <Project Path="BlazorSocial.Data/BlazorSocial.Data.csproj" />
   <Project Path="BlazorSocial.Client/BlazorSocial.Client.csproj" />
   <Project Path="BlazorSocial.Shared/BlazorSocial.Shared.csproj" />
   <Project Path="BlazorSocial.ServiceDefaults/BlazorSocial.ServiceDefaults.csproj" />
   <Project Path="BlazorSocial.AppHost/BlazorSocial.AppHost.csproj" />
   <Project Path="BlazorSocial.Tests/BlazorSocial.Tests.csproj" />
   <Project Path="BlazorSocial.WebServer/BlazorSocial.WebServer.csproj" />
+  <Project Path="BlazorSocial.Infrastructure/BlazorSocial.Infrastructure.csproj" />
+  <Project Path="BlazorSocial.Auth.Contracts/BlazorSocial.Auth.Contracts.csproj" />
+  <Project Path="BlazorSocial.Auth/BlazorSocial.Auth.csproj" />
+  <Project Path="BlazorSocial.Primitives/BlazorSocial.Primitives.csproj" />
+
 </Solution>

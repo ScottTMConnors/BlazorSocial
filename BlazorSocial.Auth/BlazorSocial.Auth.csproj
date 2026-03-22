@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="BlazorSocial.Primitives" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BlazorSocial.Auth.Contracts\BlazorSocial.Auth.Contracts.csproj" />
+    <ProjectReference Include="..\BlazorSocial.Infrastructure\BlazorSocial.Infrastructure.csproj" />
+
+    <ProjectReference Include="..\BlazorSocial.ServiceDefaults\BlazorSocial.ServiceDefaults.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,76 +1,9 @@
-﻿@using BlazorSocial.Services.DataGeneratorService
 @using Microsoft.AspNetCore.Authorization
-@using Microsoft.EntityFrameworkCore
-@attribute [Route($"/{NavigationRoute.Admin}")]
+@attribute [Route("/Admin")]
 
 @rendermode @(new InteractiveServerRenderMode(false))
 
-@inject IDbContextFactory<ContentDbContext> DbContextFactory
-@inject DataGeneratorService DataGeneratorService
-
 @attribute [Authorize(Roles = "Admin")]
 
-
-<h1>Admin</h1>
-
-<p role="status">Server Message: @message</p>
-
-<br/>
-<p># of posts in db</p>
-<p>@PostCount</p>
-<br/>
-
-<h3>Generate Random Posts</h3>
-<br/>
-<p>Specify # of users</p>
-<input type="number" @bind="numberOfUsers"/>
-<br/>
-<p>Specify # of posts</p>
-<input type="number" @bind="numberOfPosts"/>
-<br/>
-<p>Specify # of interaction</p>
-<input type="number" @bind="maxInteractions"/>
-<br/>
-<br/>
-<button class="btn btn-primary" @onclick="GenerateData">Generate</button>
-<br/>
-<br/>
-
-@if (isGenerating)
-{
-    <p role="status">Generating data...</p>
-}
-
-@code {
-    private readonly string message = "";
-
-    private int numberOfPosts = 100;
-
-    private int maxInteractions = 999;
-
-    private int numberOfUsers = 100;
-
-    public int PostCount { get; private set; }
-
-    private bool isGenerating { get; set; }
-
-
-    protected override async Task OnInitializedAsync()
-    {
-        await using var dbContext = await DbContextFactory.CreateDbContextAsync();
-        PostCount = await dbContext.Posts.CountAsync();
-    }
-
-    private async Task GenerateData()
-    {
-        isGenerating = true;
-        _ = InvokeAsync(StateHasChanged);
-        await DataGeneratorService.GenerateData(numberOfUsers, numberOfPosts, maxInteractions);
-        await using var dbContext = await DbContextFactory.CreateDbContextAsync();
-        PostCount = await dbContext.Posts.CountAsync();
-        isGenerating = false;
-        _ = InvokeAsync(StateHasChanged);
-    }
-
-
-}
+<FluentLabel Typo="Typography.H1">Admin</FluentLabel>
+<FluentLabel>Admin data generation has moved to the API service.</FluentLabel>

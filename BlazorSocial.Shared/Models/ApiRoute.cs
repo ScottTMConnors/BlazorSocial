@@ -1,4 +1,4 @@
-﻿namespace BlazorSocial.Shared.Models;
+namespace BlazorSocial.Shared.Models;
 
 public static class ApiRoute
 {
@@ -12,7 +12,11 @@ public static class ApiRoute
         public const string PostVote = PostById + "/vote";
         public const string PostComments = PostById + "/comments";
         public const string PostView = PostById + "/view";
-        public const string Login = "/api/account/login";
-        public const string ExternalLogin = "/api/account/external-login";
+    }
+
+    public static class Auth
+    {
+        public const string Login    = "/auth/login";
+        public const string Register = "/auth/register";
     }
 }

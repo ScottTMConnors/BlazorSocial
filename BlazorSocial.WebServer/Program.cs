@@ -1,17 +1,14 @@
-#if DEBUG
-using BlazorSocial.Services.DataGeneratorService;
-#endif
+using BlazorSocial.Auth.Contracts;
 using BlazorSocial.Components;
-using BlazorSocial.Components.Account;
-using BlazorSocial.Data;
-using BlazorSocial.Data.Entities;
-using BlazorSocial.Extensions;
+using BlazorSocial.Proxy;
 using BlazorSocial.ServiceDefaults;
-using BlazorSocial.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.FluentUI.AspNetCore.Components;
+using Microsoft.IdentityModel.Tokens;
+using Refit;
+using System.Text;
+using Yarp.ReverseProxy.Forwarder;
 using BlazorSocialClient = BlazorSocial.Client._Imports;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,81 +40,39 @@ builder.Services.AddFluentUIComponents(options =>
 });
 
 builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddScoped<IdentityUserAccessor>();
-builder.Services.AddScoped<IdentityRedirectManager>();
-builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
-builder.Services.AddAuthentication(options =>
+var jwtKey = builder.Configuration["Jwt:SigningKey"] ?? "development-signing-key-placeholder";
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        options.DefaultScheme = IdentityConstants.ApplicationScheme;
-        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-    })
-    .AddIdentityCookies();
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            ValidateIssuer = true,
+            ValidIssuer = "blazorsocial-auth",
+            ValidateAudience = true,
+            ValidAudience = "blazorsocial-api"
+        };
+    });
 
 builder.Services.AddAuthorization();
 
-if (builder.Environment.IsEnvironment("Testing"))
-{
-    // Use SQLite in-memory for test runs. The connection is kept alive by
-    // TestWebAppFactory so the named database persists for the whole test run.
-    const string testConnectionString = "DataSource=BlazorSocialTest;Mode=Memory;Cache=Shared";
-    builder.Services.AddDbContext<ContentDbContext>(options => options.UseSqlite(testConnectionString));
-    builder.Services.AddDbContextFactory<ContentDbContext>(options => options.UseSqlite(testConnectionString));
-}
-else
-{
-    builder.AddSqlServerDbContext<ContentDbContext>("ContentDatabase");
-    builder.Services.AddPooledDbContextFactory<ContentDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("ContentDatabase")));
-}
+builder.Services.AddRefitClient<IAuthApi>()
+    .ConfigureHttpClient(c => c.BaseAddress = new Uri("https+http://auth"));
 
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
-builder.Services.AddIdentityCore<SocialUser>(options =>
-    {
-        options.SignIn.RequireConfirmedAccount = true;
-        options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
-    })
-    .AddRoles<IdentityRole<UserId>>()
-    .AddEntityFrameworkStores<ContentDbContext>()
-    .AddSignInManager()
-    .AddDefaultTokenProviders();
-
-builder.Services.AddSingleton<IEmailSender<SocialUser>, IdentityNoOpEmailSender>();
-
-builder.Services.AddOpenApi();
-
-builder.Services.AddScoped<CurrentUserService>();
-#if DEBUG
-builder.Services.AddScoped<DataGeneratorService>();
-#endif
+builder.Services.AddHttpForwarder();
 
 var app = builder.Build();
-
-using (var scope = app.Services.CreateScope())
-{
-    var contentDb = scope.ServiceProvider.GetRequiredService<ContentDbContext>();
-    contentDb.Database.EnsureCreated();
-}
-
-await app.SeedRolesAsync();
-await app.SeedAdminUserAsync();
-#if DEBUG
-await app.SeedDevelopmentDataAsync();
-#endif
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseMigrationsEndPoint();
     app.UseWebAssemblyDebugging();
-    app.MapOpenApi();
-    app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "BlazorSocial API"));
 }
 else
 {
     app.UseExceptionHandler("/Error", true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -127,16 +82,20 @@ app.UseHttpsRedirection();
 app.MapStaticAssets();
 app.UseAntiforgery();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(BlazorSocialClient).Assembly);
 
-app.MapPostApiEndpoints();
-app.MapAccountApiEndpoints();
+// Proxy /auth/* to the standalone Auth service
+app.MapForwarder("/auth/{**catch-all}", "https+http://auth", ForwarderRequestConfig.Empty);
 
-// Add additional endpoints required by the Identity /Account Razor components.
-app.MapAdditionalIdentityEndpoints();
+// Proxy /api/* to the standalone Api service with user ID injection
+app.MapForwarder("/api/{**catch-all}", "https+http://api",
+    ForwarderRequestConfig.Empty, new AddUserIdTransformer());
 
 app.MapDefaultEndpoints();
 

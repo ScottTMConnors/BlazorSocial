@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
@@ -23,7 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BlazorSocial.WebServer\BlazorSocial.WebServer.csproj" />
+    <ProjectReference Include="..\BlazorSocial.Api\BlazorSocial.Api.csproj" />
+    <ProjectReference Include="..\BlazorSocial.Data\BlazorSocial.Data.csproj" />
     <ProjectReference Include="..\BlazorSocial.Shared\BlazorSocial.Shared.csproj" />
   </ItemGroup>
 
