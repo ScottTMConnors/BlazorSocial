@@ -207,7 +207,7 @@ public class DataGeneratorService(IDbContextFactory<ContentDbContext> DbContextF
 
             var newPost = new Post(title, content, userId, postDate, postType);
 
-            GenerateViewsandVotes(newPost, numberOfInteractions);
+            _ = GenerateViewsandVotes(newPost, numberOfInteractions);
 
             generatedPosts.Add(newPost);
 

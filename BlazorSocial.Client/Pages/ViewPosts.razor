@@ -79,7 +79,7 @@
 
     private PostId? CurrentPostId { get; set; }
 
-    private FluentDialog? _postDetailDialog;
+    private FluentDialog _postDetailDialog = null!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

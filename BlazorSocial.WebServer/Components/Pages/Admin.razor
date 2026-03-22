@@ -1,7 +1,7 @@
-﻿@attribute [Route($"/{NavigationRoute.Admin}")]
-@using BlazorSocial.Services.DataGeneratorService
+﻿@using BlazorSocial.Services.DataGeneratorService
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
+@attribute [Route($"/{NavigationRoute.Admin}")]
 
 @rendermode @(new InteractiveServerRenderMode(false))
 
@@ -55,7 +55,7 @@
     private bool isGenerating { get; set; }
 
 
-    protected async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
         PostCount = await dbContext.Posts.CountAsync();
@@ -64,12 +64,12 @@
     private async Task GenerateData()
     {
         isGenerating = true;
-        InvokeAsync(StateHasChanged);
+        _ = InvokeAsync(StateHasChanged);
         await DataGeneratorService.GenerateData(numberOfUsers, numberOfPosts, maxInteractions);
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
         PostCount = await dbContext.Posts.CountAsync();
         isGenerating = false;
-        InvokeAsync(StateHasChanged);
+        _ = InvokeAsync(StateHasChanged);
     }
 
 

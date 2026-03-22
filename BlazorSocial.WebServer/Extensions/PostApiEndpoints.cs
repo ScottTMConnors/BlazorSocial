@@ -211,6 +211,24 @@ public static class PostApiEndpoints
                     return Results.Ok();
                 });
 
+            endpoints.MapPost(ApiRoute.Templates.Posts,
+                async (
+                    [FromBody] CreatePostDto dto,
+                    HttpContext http,
+                    IDbContextFactory<ContentDbContext> dbFactory,
+                    CancellationToken ct) =>
+                {
+                    var userId = http.GetCurrentUserId();
+                    if (userId is null) return Results.Unauthorized();
+
+                    await using var db = await dbFactory.CreateDbContextAsync(ct);
+                    var post = new Post(dto.Title, dto.Content, userId, DateTime.UtcNow, PostType.Text);
+                    db.Posts.Add(post);
+                    await db.SaveChangesAsync(ct);
+                    return Results.Ok(post.Id);
+                })
+                .RequireAuthorization();
+
             endpoints.MapPost(ApiRoute.Templates.PostView,
                 async (PostId id, HttpContext httpContext,
                     IDbContextFactory<ContentDbContext> dbContextFactory, CancellationToken ct) =>

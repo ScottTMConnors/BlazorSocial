@@ -21,4 +21,7 @@ public interface IPostsApi
 
     [Post(ApiRoute.Templates.PostView)]
     Task ViewPostAsync(PostId id, CancellationToken cancellationToken = default);
+
+    [Post(ApiRoute.Templates.Posts)]
+    Task<PostId> CreatePostAsync([Body] CreatePostDto request, CancellationToken cancellationToken = default);
 }

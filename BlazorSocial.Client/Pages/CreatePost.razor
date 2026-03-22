@@ -1,0 +1,86 @@
+@page "/CreatePost"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+@rendermode @(new InteractiveWebAssemblyRenderMode(false))
+
+@inject IPostsApi PostsApi
+@inject NavigationManager Nav
+
+<PageTitle>Create Post</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" Style="max-width: 700px; margin: 2rem auto; padding: 0 1rem;">
+    <FluentLabel Typo="Typography.H4">Create a Post</FluentLabel>
+    <FluentDivider/>
+
+    <EditForm Model="@_input" OnValidSubmit="SubmitAsync">
+        <DataAnnotationsValidator/>
+
+        <FluentStack Orientation="Orientation.Vertical" Gap="12">
+            <FluentTextInput @bind-Value="_input.Title"
+                             Label="Title"
+                             Required="true"
+                             Style="width: 100%;"
+                             Placeholder="An interesting title..."/>
+            <ValidationMessage For="() => _input.Title"/>
+
+            <FluentTextArea @bind-Value="_input.Content"
+                            Label="Content"
+                            Required="true"
+                            Rows="8"
+                            Style="width: 100%;"
+                            Placeholder="What's on your mind?"/>
+            <ValidationMessage For="() => _input.Content"/>
+
+            @if (_errorMessage is not null)
+            {
+                <FluentLabel Style="color: var(--error);">@_errorMessage</FluentLabel>
+            }
+
+            <FluentButton Type="ButtonType.Submit"
+                          Appearance="ButtonAppearance.Primary"
+                          Loading="@_submitting">
+                Post
+            </FluentButton>
+        </FluentStack>
+    </EditForm>
+</FluentStack>
+
+@code {
+    private PostInputModel _input = new();
+    private bool _submitting;
+    private string? _errorMessage;
+
+    private sealed class PostInputModel
+    {
+        [Required]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Title must be between 6 and 100 characters.")]
+        public string Title { get; set; } = "";
+
+        [Required]
+        [StringLength(3999, MinimumLength = 6, ErrorMessage = "Content must be between 6 and 3999 characters.")]
+        public string Content { get; set; } = "";
+    }
+
+    private async Task SubmitAsync()
+    {
+        _submitting = true;
+        _errorMessage = null;
+        try
+        {
+            var dto = new CreatePostDto { Title = _input.Title, Content = _input.Content };
+            var postId = await PostsApi.CreatePostAsync(dto);
+            Nav.NavigateTo($"/post/{postId}");
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Failed to create post: {ex.Message}";
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+}
