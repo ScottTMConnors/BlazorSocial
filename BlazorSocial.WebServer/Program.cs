@@ -62,6 +62,8 @@ builder.Services.AddRefitClient<IAuthApi>()
     .ConfigureHttpClient(c => c.BaseAddress = new Uri("https+http://auth"));
 
 builder.Services.AddHttpForwarder();
+builder.Services.AddHttpClient("AuthProxy");
+builder.Services.AddHttpClient("ApiProxy");
 
 var app = builder.Build();
 
@@ -91,11 +93,18 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(BlazorSocialClient).Assembly);
 
 // Proxy /auth/* to the standalone Auth service
-app.MapForwarder("/auth/{**catch-all}", "https+http://auth", ForwarderRequestConfig.Empty);
+app.Map("/auth/{**catch-all}", async (IHttpForwarder forwarder, IHttpMessageHandlerFactory handlerFactory, HttpContext context) =>
+{
+    using var invoker = new HttpMessageInvoker(handlerFactory.CreateHandler("AuthProxy"), disposeHandler: false);
+    await forwarder.SendAsync(context, "https+http://auth", invoker, ForwarderRequestConfig.Empty);
+});
 
 // Proxy /api/* to the standalone Api service with user ID injection
-app.MapForwarder("/api/{**catch-all}", "https+http://api",
-    ForwarderRequestConfig.Empty, new AddUserIdTransformer());
+app.Map("/api/{**catch-all}", async (IHttpForwarder forwarder, IHttpMessageHandlerFactory handlerFactory, HttpContext context) =>
+{
+    using var invoker = new HttpMessageInvoker(handlerFactory.CreateHandler("ApiProxy"), disposeHandler: false);
+    await forwarder.SendAsync(context, "https+http://api", invoker, ForwarderRequestConfig.Empty, new AddUserIdTransformer());
+});
 
 app.MapDefaultEndpoints();
 

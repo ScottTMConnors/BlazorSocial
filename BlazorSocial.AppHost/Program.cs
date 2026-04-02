@@ -9,7 +9,9 @@ var contentDb = sql.AddDatabase("ContentDatabase");
 
 var redis = builder.AddRedis("cache");
 
-var jwtKey = builder.AddParameter("JwtSigningKey", secret: true);
+var jwtKey = builder.AddParameter("JwtSigningKey",
+    value: Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32)),
+    secret: true);
 
 var auth = builder.AddProject<BlazorSocial_Auth>("auth")
     .WithReference(authDb)

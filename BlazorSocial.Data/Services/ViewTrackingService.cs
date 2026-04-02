@@ -2,7 +2,7 @@ using BlazorSocial.Data.BackgroundJobs;
 
 namespace BlazorSocial.Data.Services;
 
-public class ViewTrackingService(PostEventQueue queue) : IViewTrackingService
+public class ViewTrackingService(ViewEventQueue queue) : IViewTrackingService
 {
     public Task RecordViewAsync(PostId postId, string? ipAddress, UserId? userId, CancellationToken ct)
     {

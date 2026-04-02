@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 namespace BlazorSocial.Data.BackgroundJobs;
 
 public sealed class MetadataUpdateWorker(
-    PostEventQueue queue,
+    MetadataEventQueue queue,
     IServiceScopeFactory scopeFactory,
     ILogger<MetadataUpdateWorker> logger) : BackgroundService
 {
@@ -28,7 +28,7 @@ public sealed class MetadataUpdateWorker(
     }
 
     private static async Task ReadEventsAsync(
-        PostEventQueue queue,
+        MetadataEventQueue queue,
         HashSet<PostId> votes,
         HashSet<PostId> comments,
         HashSet<PostId> newPosts,
@@ -110,6 +110,7 @@ public sealed class MetadataUpdateWorker(
                     dbContext.PostMetadatas.Add(new Data.Entities.PostMetadata(postId));
                     await dbContext.SaveChangesAsync(ct);
                 }
+                // PostCreated: read model row is created synchronously in PostCommandService — no-op here
             }
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)

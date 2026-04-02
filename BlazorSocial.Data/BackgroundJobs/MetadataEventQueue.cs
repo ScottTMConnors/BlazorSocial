@@ -2,7 +2,7 @@ using System.Threading.Channels;
 
 namespace BlazorSocial.Data.BackgroundJobs;
 
-public sealed class PostEventQueue
+public sealed class MetadataEventQueue
 {
     private readonly Channel<PostEvent> _channel = Channel.CreateBounded<PostEvent>(
         new BoundedChannelOptions(10_000)

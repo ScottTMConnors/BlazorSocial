@@ -1,6 +1,7 @@
 using BlazorSocial.Api.Extensions;
 using BlazorSocial.Data;
 using BlazorSocial.Data.Entities;
+using BlazorSocial.Data.Services;
 using BlazorSocial.ServiceDefaults;
 using BlazorSocial.Shared;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -72,10 +73,83 @@ if (isTestingEnv)
         });
         await db.SaveChangesAsync();
     }
+
+    db.Database.ExecuteSqlRaw("""
+        CREATE VIEW IF NOT EXISTS PostReadModels AS
+        SELECT
+            p.Id        AS PostId,
+            p.Title,
+            p.Content,
+            p.PostDate,
+            CASE p.PostType
+                WHEN 1 THEN 'Text'
+                WHEN 2 THEN 'Image'
+                WHEN 3 THEN 'Video'
+                WHEN 4 THEN 'Link'
+                WHEN 5 THEN 'EmbeddedVideo'
+                ELSE 'Unknown'
+            END         AS PostType,
+            COALESCE(u.UserName, 'Unknown') AS AuthorName,
+            COALESCE(pm.Upvotes,      0)    AS Upvotes,
+            COALESCE(pm.Downvotes,    0)    AS Downvotes,
+            COALESCE(pm.NetVotes,     0)    AS NetVotes,
+            COALESCE(pm.ViewCount,    0)    AS ViewCount,
+            COALESCE(pm.CommentCount, 0)    AS CommentCount
+        FROM Posts p
+        LEFT JOIN PostMetadatas pm ON pm.PostId = p.Id
+        LEFT JOIN Users          u  ON u.Id     = p.AuthorId
+        """);
 }
 
 if (app.Environment.IsDevelopment())
 {
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ContentDbContext>();
+    db.Database.EnsureCreated();
+
+    db.Database.ExecuteSqlRaw("""
+        CREATE OR ALTER VIEW PostReadModels AS
+        SELECT
+            p.Id        AS PostId,
+            p.Title,
+            p.Content,
+            p.PostDate,
+            CASE p.PostType
+                WHEN 1 THEN 'Text'
+                WHEN 2 THEN 'Image'
+                WHEN 3 THEN 'Video'
+                WHEN 4 THEN 'Link'
+                WHEN 5 THEN 'EmbeddedVideo'
+                ELSE 'Unknown'
+            END         AS PostType,
+            COALESCE(u.UserName, 'Unknown') AS AuthorName,
+            COALESCE(pm.Upvotes,      0)    AS Upvotes,
+            COALESCE(pm.Downvotes,    0)    AS Downvotes,
+            COALESCE(pm.NetVotes,     0)    AS NetVotes,
+            COALESCE(pm.ViewCount,    0)    AS ViewCount,
+            COALESCE(pm.CommentCount, 0)    AS CommentCount
+        FROM Posts p
+        LEFT JOIN PostMetadatas pm ON pm.PostId = p.Id
+        LEFT JOIN Users          u  ON u.Id     = p.AuthorId
+        """);
+
+    // Generate sample Reddit data if database is empty (UseReddit=true by default in DataGeneratorService)
+    var postCount = await db.Posts.CountAsync();
+    if (postCount == 0)
+    {
+        Console.WriteLine("Database is empty. Generating sample data from Reddit...");
+        var dataGenerator = scope.ServiceProvider.GetRequiredService<DataGeneratorService>();
+        // numberOfPosts: ignored when using Reddit (pulls ~100 from /r/confession)
+        // numberOfUsers: users created to associate with posts
+        // numberOfInteractions: base number for views/votes/comments per post
+        await dataGenerator.GenerateData(
+            numberOfPosts: 100,
+            numberOfUsers: 50,
+            numberOfInteractions: 10
+        );
+        Console.WriteLine("Sample data generation complete.");
+    }
+
     app.MapOpenApi();
     app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "BlazorSocial API"));
 }

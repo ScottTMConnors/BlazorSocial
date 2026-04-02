@@ -1,25 +1,25 @@
 using BlazorSocial.Data.BackgroundJobs;
 using BlazorSocial.Data.Entities;
-using BlazorSocial.Data.Models;
+using BlazorSocial.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlazorSocial.Data.Services;
 
 public class CommentService(
     IDbContextFactory<ContentDbContext> dbContextFactory,
-    PostEventQueue queue) : ICommentService
+    MetadataEventQueue queue) : ICommentService
 {
-    public async Task<List<CommentRow>> GetCommentsAsync(PostId postId, int startIndex, int count, CancellationToken ct)
+    public async Task<List<CommentDto>> GetCommentsAsync(PostId postId, int startIndex, int count, CancellationToken ct)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
         return await dbContext.Comments
-            .Include(c => c.Author)
+            .AsNoTracking()
             .Where(c => c.PostId == postId)
             .OrderByDescending(c => c.PostDate)
             .Skip(startIndex)
             .Take(count)
-            .Select(c => new CommentRow
+            .Select(c => new CommentDto
             {
                 AuthorName = c.Author != null ? c.Author.DisplayName : "Unknown",
                 PostDate = c.PostDate,

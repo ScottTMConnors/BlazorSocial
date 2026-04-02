@@ -14,6 +14,7 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options)
     public DbSet<Group> Groups { get; set; }
     public DbSet<View> Views { get; set; }
     public DbSet<PostMetadata> PostMetadatas { get; set; }
+    public DbSet<PostReadModel> PostReadModels { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -24,6 +25,11 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options)
             entity.HasIndex(p => p.PostDate)
                 .IsDescending()
                 .HasDatabaseName("IX_Posts_PostDate_Desc");
+        });
+
+        builder.Entity<PostReadModel>(entity =>
+        {
+            entity.ToView("PostReadModels");
         });
 
         builder.Entity<Vote>(entity =>

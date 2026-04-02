@@ -1,5 +1,5 @@
 using System.Text.Json;
-using BlazorSocial.Data.Models;
+using BlazorSocial.Shared.Models;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace BlazorSocial.Data.Services.Caching;
@@ -8,13 +8,13 @@ public class CachedCommentService(CommentService inner, IDistributedCache cache)
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
-    public async Task<List<CommentRow>> GetCommentsAsync(PostId postId, int startIndex, int count, CancellationToken ct)
+    public async Task<List<CommentDto>> GetCommentsAsync(PostId postId, int startIndex, int count, CancellationToken ct)
     {
         var key = CacheKeys.PostComments(postId, startIndex, count);
         var cached = await cache.GetStringAsync(key, ct);
         if (cached is not null)
         {
-            return JsonSerializer.Deserialize<List<CommentRow>>(cached, JsonOptions) ?? [];
+            return JsonSerializer.Deserialize<List<CommentDto>>(cached, JsonOptions) ?? [];
         }
 
         var result = await inner.GetCommentsAsync(postId, startIndex, count, ct);

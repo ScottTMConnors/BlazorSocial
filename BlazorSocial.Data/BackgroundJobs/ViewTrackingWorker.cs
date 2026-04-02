@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace BlazorSocial.Data.BackgroundJobs;
 
 public sealed class ViewTrackingWorker(
-    PostEventQueue queue,
+    ViewEventQueue queue,
     IServiceScopeFactory scopeFactory,
     ILogger<ViewTrackingWorker> logger) : BackgroundService
 {
@@ -26,16 +26,13 @@ public sealed class ViewTrackingWorker(
     }
 
     private static async Task ReadViewEventsAsync(
-        PostEventQueue queue,
+        ViewEventQueue queue,
         List<ViewRecorded> pending,
         CancellationToken ct)
     {
-        await foreach (var evt in queue.ReadAllAsync(ct))
+        await foreach (var view in queue.ReadAllAsync(ct))
         {
-            if (evt is ViewRecorded view)
-            {
-                pending.Add(view);
-            }
+            pending.Add(view);
         }
     }
 
@@ -87,6 +84,12 @@ public sealed class ViewTrackingWorker(
                     dbContext.PostMetadatas.Add(new Entities.PostMetadata(postId) { ViewCount = count });
                     await dbContext.SaveChangesAsync(ct);
                 }
+
+                // Sync read model view count
+                await dbContext.PostReadModels
+                    .Where(r => r.PostId == postId)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(r => r.ViewCount, r => r.ViewCount + count), ct);
             }
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)

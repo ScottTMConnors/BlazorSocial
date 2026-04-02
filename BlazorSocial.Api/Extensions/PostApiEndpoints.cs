@@ -12,7 +12,7 @@ public static class PostApiEndpoints
         {
             endpoints.MapGet(ApiRoute.Templates.Posts,
                 async (HttpContext httpContext,
-                    IPostService postService,
+                    IPostQueryService postQueryService,
                     CancellationToken ct,
                     [FromQuery] int startIndex = 0,
                     [FromQuery] int count = 10) =>
@@ -20,7 +20,7 @@ public static class PostApiEndpoints
                     try
                     {
                         var userId = httpContext.GetCurrentUserId();
-                        var posts = await postService.GetPostsAsync(userId, startIndex, count, ct);
+                        var posts = await postQueryService.GetPostsAsync(userId, startIndex, count, ct);
                         return Results.Ok(posts);
                     }
                     catch (OperationCanceledException)
@@ -34,10 +34,10 @@ public static class PostApiEndpoints
                 });
 
             endpoints.MapGet(ApiRoute.Templates.PostById,
-                async (PostId id, HttpContext httpContext, IPostService postService, CancellationToken ct) =>
+                async (PostId id, HttpContext httpContext, IPostQueryService postQueryService, CancellationToken ct) =>
                 {
                     var userId = httpContext.GetCurrentUserId();
-                    var post = await postService.GetPostByIdAsync(id, userId, ct);
+                    var post = await postQueryService.GetPostByIdAsync(id, userId, ct);
 
                     if (post is null)
                     {
@@ -102,13 +102,13 @@ public static class PostApiEndpoints
                 async (
                     [FromBody] CreatePostDto dto,
                     HttpContext http,
-                    IPostService postService,
+                    IPostCommandService postCommandService,
                     CancellationToken ct) =>
                 {
                     var userId = http.GetCurrentUserId();
                     if (userId is null) return Results.Unauthorized();
 
-                    var postId = await postService.CreatePostAsync(dto.Title, dto.Content, userId, ct);
+                    var postId = await postCommandService.CreatePostAsync(dto.Title, dto.Content, userId, ct);
                     return Results.Ok(postId);
                 })
                 .RequireAuthorization();

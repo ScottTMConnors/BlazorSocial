@@ -8,6 +8,7 @@ public class PostType : SmartEnum<PostType>
     public static readonly PostType Image = new(nameof(Image), 2);
     public static readonly PostType Video = new(nameof(Video), 3);
     public static readonly PostType Link = new(nameof(Link), 4);
+    public static readonly PostType EmbeddedVideo = new(nameof(EmbeddedVideo), 5);
 
     private PostType(string name, int value) : base(name, value)
     {

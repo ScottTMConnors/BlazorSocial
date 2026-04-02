@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BlazorSocial.Infrastructure\BlazorSocial.Infrastructure.csproj" />
+    <ProjectReference Include="..\BlazorSocial.Shared\BlazorSocial.Shared.csproj" />
   </ItemGroup>
 
 </Project>

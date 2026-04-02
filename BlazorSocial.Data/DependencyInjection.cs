@@ -7,27 +7,40 @@ namespace BlazorSocial.Data;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddBlazorSocialDataServices(this IServiceCollection services)
+    extension(IServiceCollection services)
     {
-        // Singleton event queue — shared across all scopes in this process
-        services.AddSingleton<PostEventQueue>();
+        public IServiceCollection AddBlazorSocialDataServices()
+        {
+            // Singleton event queues — each dedicated to a single consumer, eliminating race conditions
+            services.AddSingleton<MetadataEventQueue>();
+            services.AddSingleton<ViewEventQueue>();
 
-        // Background workers that drain the queue
-        services.AddHostedService<MetadataUpdateWorker>();
-        services.AddHostedService<ViewTrackingWorker>();
+            // Background workers that drain their respective queues
+            services.AddHostedService<MetadataUpdateWorker>();
+            services.AddHostedService<ViewTrackingWorker>();
 
-        // Register concrete implementations so cached decorators can inject them directly
-        services.AddScoped<PostService>();
-        services.AddScoped<CommentService>();
+            // Register concrete implementations so cached decorators can inject them directly
+            services.AddScoped<PostQueryService>();
+            services.AddScoped<PostCommandService>();
+            services.AddScoped<CommentService>();
 
-        // Cached decorators fulfil the public interface contracts
-        services.AddScoped<IPostService, CachedPostService>();
-        services.AddScoped<ICommentService, CachedCommentService>();
+            // Cached decorator for query service — works for ALL users (base feed cached, votes overlaid)
+            services.AddScoped<IPostQueryService, CachedPostQueryService>();
 
-        // Vote and view tracking — writes only, no caching
-        services.AddScoped<IVoteService, VoteService>();
-        services.AddScoped<IViewTrackingService, ViewTrackingService>();
+            // Command service — no caching on the write side
+            services.AddScoped<IPostCommandService, PostCommandService>();
 
-        return services;
+            // Comment service with caching decorator
+            services.AddScoped<ICommentService, CachedCommentService>();
+
+            // Vote and view tracking — writes only, no caching
+            services.AddScoped<IVoteService, VoteService>();
+            services.AddScoped<IViewTrackingService, ViewTrackingService>();
+
+            // Data generator service for development seeding
+            services.AddScoped<DataGeneratorService>();
+
+            return services;
+        }
     }
 }

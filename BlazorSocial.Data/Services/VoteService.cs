@@ -6,7 +6,7 @@ namespace BlazorSocial.Data.Services;
 
 public class VoteService(
     IDbContextFactory<ContentDbContext> dbContextFactory,
-    PostEventQueue queue) : IVoteService
+    MetadataEventQueue queue) : IVoteService
 {
     public async Task VoteAsync(PostId postId, UserId userId, bool isUpvote, CancellationToken ct)
     {
